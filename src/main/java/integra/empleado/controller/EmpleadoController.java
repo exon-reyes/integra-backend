@@ -30,4 +30,5 @@ class EmpleadoController {
         return ResponseEntity.ok(ResponseData.of(catalagoEmpleados.obtenerDetalles(id), "Detalles de empleado"));
     }
 
+
 }

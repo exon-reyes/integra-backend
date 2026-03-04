@@ -12,7 +12,7 @@ import integra.asistencia.repository.CompensacionRepository;
 import integra.asistencia.repository.EmpleadoPuestoService;
 import integra.asistencia.repository.PausaModelRepository;
 import integra.asistencia.service.UnidadVerificadorService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.asistencia.util.CalculadoraJornada;
 import integra.asistencia.util.HandlerExecutor;
 import integra.empresa.repository.UnidadRepository;
@@ -39,8 +39,8 @@ public class FinalizarJornada extends BaseAsistenciaService implements HandlerEx
     private final CompensacionDepositoService compensacionDepositoService;
     private final EmpleadoPuestoService empleadoPuestoService;
 
-    public FinalizarJornada(WorkTimeImageService workTimeImageService, AsistenciaRepository asistenciaRepository, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService, UnidadRepository unidadRepository, CompensacionRepository compensacionRepository, CompensacionDepositoService compensacionDepositoService, EmpleadoPuestoService empleadoPuestoService) {
-        super(workTimeImageService);
+    public FinalizarJornada(WorkImageService workImageService, AsistenciaRepository asistenciaRepository, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService, UnidadRepository unidadRepository, CompensacionRepository compensacionRepository, CompensacionDepositoService compensacionDepositoService, EmpleadoPuestoService empleadoPuestoService) {
+        super(workImageService);
         this.asistenciaRepository = asistenciaRepository;
         this.pausaRepository = pausaRepository;
         this.unidadVerificadorService = unidadVerificadorService;

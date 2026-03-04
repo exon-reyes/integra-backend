@@ -6,7 +6,7 @@ import integra.asistencia.entity.TipoIncidencia;
 import integra.asistencia.exception.AsistenciaDomainException;
 import integra.asistencia.repository.AsistenciaRepository;
 import integra.asistencia.service.UnidadVerificadorService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.asistencia.util.HandlerExecutor;
 import integra.empleado.entity.EmpleadoEntity;
 import org.springframework.stereotype.Service;
@@ -23,8 +23,8 @@ public class IniciarJornada extends BaseAsistenciaService implements HandlerExec
     private final AsistenciaRepository asistenciaRepository;
     private final UnidadVerificadorService unidadVerificadorService;
 
-    public IniciarJornada(WorkTimeImageService workTimeImageService, AsistenciaRepository asistenciaRepository, UnidadVerificadorService unidadVerificadorService) {
-        super(workTimeImageService);
+    public IniciarJornada(WorkImageService workImageService, AsistenciaRepository asistenciaRepository, UnidadVerificadorService unidadVerificadorService) {
+        super(workImageService);
         this.asistenciaRepository = asistenciaRepository;
         this.unidadVerificadorService = unidadVerificadorService;
     }

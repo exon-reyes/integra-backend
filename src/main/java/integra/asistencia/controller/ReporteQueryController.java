@@ -12,7 +12,7 @@ import integra.asistencia.facade.ReporteFacade;
 import integra.asistencia.factory.EmpleadosSinAsistenciaFactory;
 import integra.asistencia.model.EmpleadoReporte;
 import integra.asistencia.service.ObtenerEmpleadosSinAsistenciaService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.utils.ResponseData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ import static integra.asistencia.factory.EmpleadoFactory.mapRequestToCommand;
 public class ReporteQueryController {
 
     private final ReporteFacade reporteFacade;
-    private final WorkTimeImageService imageService;
+    private final WorkImageService imageService;
     private final ObtenerEmpleadosSinAsistenciaService obtenerEmpleadosSinAsistenciaService;
 
     /**

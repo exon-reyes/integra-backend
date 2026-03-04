@@ -1,13 +1,13 @@
 package integra.asistencia.service.jornada;
 
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
 public abstract class BaseAsistenciaService {
-    protected final WorkTimeImageService workTimeImageService;
+    protected final WorkImageService workTimeImageService;
 
     protected String guardarFotoSiExiste(String foto, Integer empleadoId) {
         if (foto == null) {
