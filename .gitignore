@@ -37,7 +37,7 @@ img/
 .gitattributes
 mvnw
 mvnw.cmd
-/integra/
+integra/
 /src/main/resources/jwt-private.key
 /src/main/resources/jwt-public.key
 /src/main/resources/certs/
