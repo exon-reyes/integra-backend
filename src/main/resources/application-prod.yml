@@ -1,0 +1,119 @@
+#openrouter:
+#  api-key: AIzaSyA4dIEaPCnPtgMtD_cBDvapiAh5aG2X-NU
+#security:
+#  jwt:
+#    private-key: classpath:certs/private.pem
+#    public-key: classpath:certs/public.pem
+#    expiration-minutes: 43200   # <--- 30 días en minutos
+#    refresh-expiration: 2592000 # 30 días en segundos
+#    expiration: 2592000         # 30 días en segundos
+#server:
+#  error:
+#  #    include-stacktrace: on_param
+#  port: 8081
+#  address: 0.0.0.0
+#  compression:
+#    enabled: true
+#    mime-types: text/html,text/css,text/plain,text/xml,application/javascript,application/json
+#  servlet:
+#    context-path: /comialex/api/${application.api_name}
+#    session:
+#      timeout: 21600s
+#spring:
+#  servlet:
+#    multipart:
+#      enabled: true
+#      max-file-size: 1GB       # Tamaño máximo por archivo
+#      max-request-size: 1GB    # Tamaño máximo de toda la petición (archivos + campos)
+#  config:
+#    import: classpath:app-config.yml
+#  jackson:
+#    time-zone: America/Mexico_City
+#    default-property-inclusion: non_null
+#  #    serialization:
+#  #      write-null-map-values: false
+#  datasource:
+#    driver-class-name: org.mariadb.jdbc.Driver
+#    url: jdbc:mariadb://localhost:3306/integra?useSSL=false
+#    username: root
+#    password: nova1912
+#    hikari:
+#      maximum-pool-size: 30
+#      connection-timeout: 60000  # 60 segundos
+#      idle-timeout: 600000       # 10 minutos
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#
+#    properties:
+#      hibernate:
+#        default_schema: comialex
+#    #        format_sql: true
+#    show-sql: false
+#    open-in-view: false
+#
+#logging: # Nivel global de logging
+#  level:
+#    integra.config.cache.CacheConfig: INFO
+#    integra.config.cache.CacheService: INFO
+#    integra.config.cache.CustomCacheErrorHandler: WARN
+#    root: INFO  # Nivel de log para la raíz de la aplicación
+#  #    com.comialex.helpdesk.ticket: DEBUG  # Nivel de log para un paquete específico
+#
+#  # Formato del log en consola
+#  pattern:
+#
+#    console: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n%throwable"
+#
+#  # Configuración del archivo de logs
+#  file:
+#    name: logs/integra.log  # Nombre del archivo de log
+#
+#  logback:
+#    rollingpolicy:
+#      file-name-pattern: "logs/archived/integra-%d{yyyy-MM-dd}.%i.log" # Faltaba esto
+#      max-file-size: 10MB
+#      max-history: 30
+#      total-size-cap: 100MB
+#
+#  # Configuraciones adicionales como logs de excepciones
+#  exception-pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n%throwable"  # Imprimir el stack trace de excepciones en consola
+#    file: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n%throwable"  # Imprimir stack trace en archivo
+#
+#integra:
+#  cache:
+#    specs:
+#      unidadInfo:
+#        expireAfterWrite: 28d
+#        maximumSize: 1000
+#        recordStats: true
+#        initialCapacity: 50
+#      unidadesActivas:
+#        expireAfterWrite: 28d
+#        maximumSize: 5000
+#        recordStats: true
+#        initialCapacity: 100
+#      unidadContacto:
+#        expireAfterWrite: 28d
+#        expireAfterAccess: 7d
+#        maximumSize: 2000
+#        recordStats: true
+#        initialCapacity: 50
+#      rolesPermisos:
+#        expireAfterWrite: 28d
+#        maximumSize: 100
+#        recordStats: true
+#        initialCapacity: 30
+#      empleadoPorNip:
+#        expireAfterWrite: 7d        # Expira después de 7 días (más tiempo en producción)
+#        expireAfterAccess: 24h      # Renueva si se accede en 24 horas
+#        maximumSize: 5000           # Máximo 5000 empleados en caché
+#        recordStats: true           # Habilitar métricas
+#        initialCapacity: 200        # Capacidad inicial
+#      parametros:
+#        expireAfterWrite: 1h
+#        maximumSize: 100
+#        recordStats: true
+#

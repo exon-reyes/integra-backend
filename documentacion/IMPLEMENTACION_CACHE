@@ -1,0 +1,311 @@
+Implementación de Caché Caffeine para Consulta de Empleados por NIP
+Objetivo
+Implementar caché para la consulta de empleados por NIP (PIN de asistencia) utilizando Caffeine, mejorando el rendimiento de las operaciones de checador que consultan frecuentemente esta información.
+
+Análisis de la Situación Actual
+Método a Cachear
+// EmpleadoRepository.java
+<T> Optional<T> findByPin(String clave, Class<T> type);
+Uso principal: ObtenerEmpleadoJornadaPorNip.execute(String pin) - Llamado cada vez que un empleado registra asistencia en el kiosco.
+
+Infraestructura Existente
+✅ Caffeine ya configurado y funcionando
+✅ CacheConfig con soporte para múltiples cachés configurables
+✅ CacheProperties para configuración desde YAML
+✅ CacheWarmupService para precalentamiento
+✅ Métricas habilitadas con Micrometer
+Cachés Actuales
+Caché	Expiración	Tamaño Máx	Uso
+unidadInfo	28 días	1000	Info básica de unidades
+unidadesActivas	28 días	5000	Unidades activas
+unidadContacto	28d write / 7d access	2000	Contactos de unidades
+rolesPermisos	28 días	100	Roles y permisos
+User Review Required
+IMPORTANT
+
+Decisión de Diseño: Nivel de Caché
+
+Existen dos enfoques para implementar el caché:
+
+Opción 1: Caché a nivel de Servicio (Recomendado ✅)
+
+Cachear en ObtenerEmpleadoJornadaPorNip.execute()
+Ventaja: Cachea el resultado completo incluyendo validaciones de jornada y pausa
+Ventaja: Menos consultas a BD (asistencia, pausas, puesto)
+Desventaja: Datos más volátiles (estado de jornada cambia frecuentemente)
+TTL sugerido: 30 segundos - 2 minutos
+Opción 2: Caché a nivel de Repositorio
+
+Cachear en EmpleadoRepository.findByPin()
+Ventaja: Datos más estables (info del empleado cambia raramente)
+Ventaja: Reutilizable para otros casos de uso
+Desventaja: Solo cachea datos básicos del empleado
+TTL sugerido: 1-7 días
+Recomendación: Implementar Opción 2 (repositorio) porque:
+
+Los datos del empleado (nombre, código, puesto) son estables
+El caché será útil para otros servicios que consulten por NIP
+Las validaciones de jornada/pausa deben ser en tiempo real
+Mejor separación de responsabilidades
+Proposed Changes
+Backend - Java
+[MODIFY]
+application-dev.yml
+Agregar nueva configuración de caché para empleados por NIP:
+
+integra:
+  cache:
+    specs:
+      # ... cachés existentes ...
+      empleadoPorNip:
+        expireAfterWrite: 2d        # Expira después de 2 días
+        expireAfterAccess: 12h      # Renueva si se accede en 12 horas
+        maximumSize: 5000           # Máximo 5000 empleados en caché
+        recordStats: true           # Habilitar métricas
+        initialCapacity: 200        # Capacidad inicial
+Justificación de parámetros:
+
+expireAfterWrite: 2d - Los datos de empleado son relativamente estables
+expireAfterAccess: 12h - Empleados activos se mantienen en caché
+maximumSize: 5000 - Suficiente para empresas medianas/grandes
+initialCapacity: 200 - Empleados que usan kiosco regularmente
+[NEW]
+EmpleadoQueryService.java
+Crear servicio con método cacheado:
+
+package integra.empleado.service;
+import integra.empleado.repository.EmpleadoRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
+public class EmpleadoQueryService {
+
+    private final EmpleadoRepository empleadoRepository;
+
+    /**
+     * Busca un empleado por su PIN de asistencia.
+     * Los resultados se cachean para mejorar el rendimiento.
+     *
+     * @param pin PIN del empleado
+     * @param type Clase de proyección deseada
+     * @return Optional con el empleado encontrado
+     */
+    @Cacheable(value = "empleadoPorNip", key = "#pin + '_' + #type.simpleName")
+    public <T> Optional<T> findByPin(String pin, Class<T> type) {
+        log.debug("Consultando empleado por PIN: {} (type: {})", pin, type.getSimpleName());
+        return empleadoRepository.findByPin(pin, type);
+    }
+}
+Detalles importantes:
+
+key = "#pin + '_' + #type.simpleName" - Clave compuesta porque el mismo PIN puede retornar diferentes proyecciones
+@Transactional(readOnly = true) - Optimización para consultas
+Log de debug para monitoreo
+[MODIFY]
+ObtenerEmpleadoJornadaPorNip.java
+Reemplazar llamada directa al repositorio por el servicio cacheado:
+
+@Component
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ObtenerEmpleadoJornadaPorNip implements HandlerExecutor<EmpleadoJornada, String> {
+    private final EmpleadoQueryService empleadoQueryService; // ✅ Cambio
+    private final AsistenciaRepository asistenciaRepository;
+    private final PausaModelRepository pausaRepository;
+    private final EmpleadoPuestoValidatorService empleadoPuestoRepositoryImpl;
+    @Override
+    public EmpleadoJornada execute(String pin) {
+        // 1. Obtener la información básica del empleado (CACHEADO)
+        EmpleadoModelInfo data = empleadoQueryService.findByPin(pin, EmpleadoModelInfo.class)
+                .orElseThrow(() -> new PinKioscoException("No se encontró al empleado especificado por el NIP " + pin));
+
+        // ... resto del código sin cambios ...
+    }
+}
+[MODIFY]
+CacheWarmupService.java
+Agregar precalentamiento opcional para empleados frecuentes:
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CacheWarmupService {
+
+    private final UnidadQueryService unidadQueryService;
+    private final TokenVersionService tokenVersionService;
+    private final RolesPermisosService rolesPermisosService;
+    private final EmpleadoQueryService empleadoQueryService; // ✅ Nuevo
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmupCaches() {
+        log.info("======");
+        log.info("Iniciando proceso de precalentamiento de cachés...");
+        try {
+            // ... cachés existentes ...
+
+            // === Carga inicial de caché de empleados (OPCIONAL) ===
+            log.info("Precargando caché de empleados activos...");
+            warmupEmpleadosActivos();
+
+            log.info("El precalentamiento de cachés se completó exitosamente");
+            log.info("======");
+        } catch (Exception e) {
+            log.error("Error durante el proceso de precalentamiento de cachés. "
+                    + "La aplicación continuará su ejecución normalmente.", e);
+        }
+    }
+
+    /**
+     * Precarga los empleados más activos en el caché.
+     * Esto es opcional y puede comentarse si no se desea.
+     */
+    private void warmupEmpleadosActivos() {
+        // Implementación opcional: cargar empleados que usan kiosco frecuentemente
+        // Por ahora dejarlo vacío o comentado
+        log.debug("Warmup de empleados omitido (implementación futura)");
+    }
+}
+Verification Plan
+Automated Tests
+1. Test de Caché en EmpleadoQueryService
+Crear: src/test/java/integra/empleado/service/EmpleadoQueryServiceTest.java
+
+@SpringBootTest
+@ActiveProfiles("test")
+class EmpleadoQueryServiceTest {
+
+    @Autowired
+    private EmpleadoQueryService empleadoQueryService;
+
+    @Autowired
+    private EmpleadoRepository empleadoRepository;
+
+    @Autowired
+    private CacheManager cacheManager;
+
+    @Test
+    void debeUsarCacheEnSegundaConsulta() {
+        // Given
+        String pin = "12345678";
+        Cache cache = cacheManager.getCache("empleadoPorNip");
+        cache.clear();
+
+        // When - Primera consulta (miss)
+        var result1 = empleadoQueryService.findByPin(pin, EmpleadoModelInfo.class);
+
+        // When - Segunda consulta (hit)
+        var result2 = empleadoQueryService.findByPin(pin, EmpleadoModelInfo.class);
+
+        // Then
+        assertNotNull(cache.get(pin + "_EmpleadoModelInfo"));
+        // Verificar que ambos resultados son iguales
+        assertEquals(result1, result2);
+    }
+}
+Comando para ejecutar:
+
+./mvnw test -Dtest=EmpleadoQueryServiceTest
+2. Test de Integración con ObtenerEmpleadoJornadaPorNip
+Crear: src/test/java/integra/asistencia/facade/ObtenerEmpleadoJornadaPorNipCacheTest.java
+
+@SpringBootTest
+@ActiveProfiles("test")
+class ObtenerEmpleadoJornadaPorNipCacheTest {
+
+    @Autowired
+    private ObtenerEmpleadoJornadaPorNip obtenerEmpleadoJornadaPorNip;
+
+    @Autowired
+    private CacheManager cacheManager;
+
+    @MockBean
+    private EmpleadoRepository empleadoRepository; // Mock para contar llamadas
+
+    @Test
+    void debeUsarCacheParaConsultasRepetidas() {
+        // Given
+        String pin = "12345678";
+        Cache cache = cacheManager.getCache("empleadoPorNip");
+        cache.clear();
+
+        // When - Ejecutar 3 veces
+        obtenerEmpleadoJornadaPorNip.execute(pin);
+        obtenerEmpleadoJornadaPorNip.execute(pin);
+        obtenerEmpleadoJornadaPorNip.execute(pin);
+
+        // Then - Solo debe haber 1 llamada al repositorio
+        verify(empleadoRepository, times(1)).findByPin(eq(pin), any());
+    }
+}
+Comando para ejecutar:
+
+./mvnw test -Dtest=ObtenerEmpleadoJornadaPorNipCacheTest
+Manual Verification
+1. Verificar Métricas de Caché
+Pasos:
+
+Iniciar la aplicación en modo dev
+Abrir navegador en: http://localhost:8081/comialex/api/integra/actuator/caches
+Verificar que aparece el caché empleadoPorNip
+Realizar varias consultas de empleados por NIP desde el frontend
+Revisar métricas en: http://localhost:8081/comialex/api/integra/actuator/metrics/cache.gets?tag=cache:empleadoPorNip
+Verificar que:
+cache.gets{result=hit} aumenta en consultas repetidas
+cache.gets{result=miss} solo aumenta en primera consulta
+Resultado esperado: Hit rate > 80% después de uso normal
+
+2. Verificar Logs de Caché
+Pasos:
+
+Configurar nivel de log en
+application-dev.yml
+:
+logging:
+  level:
+    integra.empleado.service.ConsultarEmpleadoPinService: DEBUG
+Reiniciar aplicación
+Consultar un empleado por NIP desde el kiosco
+Revisar logs y verificar:
+Primera consulta: "Consultando empleado por PIN: 12345678 (type: EmpleadoModelInfo)"
+Segunda consulta del mismo PIN: NO debe aparecer el log (caché hit)
+Resultado esperado: Log solo aparece en cache miss
+
+3. Test de Rendimiento
+Pasos:
+
+Usar herramienta como JMeter o Postman
+Crear petición GET a /asistencia/{pin}
+Ejecutar 100 peticiones con el mismo PIN
+Medir tiempo de respuesta promedio
+Comparar con versión sin caché
+Resultado esperado:
+
+Sin caché: ~50-100ms por petición
+Con caché: ~5-10ms por petición (mejora de 5-10x)
+Consideraciones Adicionales
+Invalidación de Caché
+Si se actualiza información del empleado (nombre, código, estatus), el caché debe invalidarse:
+
+@CacheEvict(value = "empleadoPorNip", allEntries = true)
+public void actualizarEmpleado(EmpleadoEntity empleado) {
+    // ... actualización ...
+}
+Monitoreo en Producción
+Revisar métricas semanalmente en /actuator/metrics
+Ajustar maximumSize si hay evictions frecuentes
+Ajustar expireAfterWrite según tasa de cambios
+Configuración por Ambiente
+Considerar diferentes TTL para dev/prod:
+
+# application-prod.yml
+integra:
+  cache:
+    specs:
+      empleadoPorNip:
+        expireAfterWrite: 7d  # Más tiempo en producción
