@@ -4,7 +4,6 @@ import integra.utils.ImageUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,16 +11,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Slf4j
-@Service
-public class WorkTimeImageService {
+public class WorkImageService {
 
+    private final String directorioFotosConfig;
+    private final String nombreServicio;
     private Path directorioFotos;
+
+    public WorkImageService() {
+        this("img", "RELOJ CHECADOR");
+    }
+
+    public WorkImageService(String directorioFotosConfig, String nombreServicio) {
+        this.directorioFotosConfig = directorioFotosConfig;
+        this.nombreServicio = nombreServicio;
+    }
 
     @PostConstruct
     public void init() throws IOException {
-        directorioFotos = Paths.get(System.getProperty("user.dir"), "img");
+        directorioFotos = Paths.get(System.getProperty("user.dir"), directorioFotosConfig);
         Files.createDirectories(directorioFotos);
-        log.info("📂 INICIALIZANDO DIRECTORIO DE IMÁGENES RELOJ CHECADOR: Directorio: {} , Directorio existe: {} , Se puede escribir: {}", directorioFotos.toAbsolutePath(), Files.exists(directorioFotos), Files.isWritable(directorioFotos));
+        log.info("📂 INICIALIZANDO DIRECTORIO DE IMÁGENES {}: Directorio: {} , Directorio existe: {} , Se puede escribir: {}",
+                nombreServicio, directorioFotos.toAbsolutePath(), Files.exists(directorioFotos), Files.isWritable(directorioFotos));
     }
 
     public String saveImg(String data, Integer idEmpleado) throws IOException {
