@@ -41,6 +41,7 @@ public class LoginService {
         String token = jwtUtil.generateToken(user);
 
         Empleado empleado = new Empleado(empleadoData.getEmpleado_id(), empleadoData.getNombre_completo());
+        empleado.setAvatar(empleadoData.getAvatar());
 
         return new JWTResponse(token, empleado, authorities.uiPermissions().stream().toList());
     }
