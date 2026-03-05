@@ -91,10 +91,6 @@ public class EmpleadoEntity {
     @Column(name = "sexo")
     private String sexo;
 
-    @Size(max = 152)
-    @ColumnDefault("concat(`nombre`, ' ', `apellido_paterno`, ifnull(concat(' ', `apellido_materno`), ''))")
-    @Column(name = "nombre_completo", length = 152)
-    private String nombreCompleto;
 
     @ColumnDefault("current_timestamp()")
     @Column(name = "created_at")
@@ -126,6 +122,9 @@ public class EmpleadoEntity {
 
     @Column(name = "path_avatar")
     private String pathAvatar;
+
+    @Column(name = "nombre_completo", insertable = false, updatable = false)
+    private String nombreCompleto;
 
 
     public EmpleadoEntity(Integer id) {

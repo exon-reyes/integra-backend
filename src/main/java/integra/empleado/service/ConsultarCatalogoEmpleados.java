@@ -33,6 +33,7 @@ public class ConsultarCatalogoEmpleados {
         empleado.setFechaReingreso(data.getFechaReingreso());
         empleado.setSexo(data.getSexo());
         empleado.setContacto(new Contacto(data.getTelefono(), data.getEmail()));
+        empleado.setAvatar(data.getPathAvatar());
 
         var dataDepartamento = data.getDepartamento();
         if (dataDepartamento != null) {

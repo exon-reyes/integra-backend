@@ -18,6 +18,7 @@ public class Empleado {
     private String nombreCompleto;
     private Puesto puesto;
     private Unidad unidad;
+    private String avatar;
     private LocalDate fechaAlta;
     private LocalDate fechaBaja;
     private LocalDate fechaReingreso;

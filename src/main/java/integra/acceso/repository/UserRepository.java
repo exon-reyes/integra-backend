@@ -38,6 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 e.id AS empleado_id,
                 e.codigo_empleado AS codigo_empleado,
                 e.estatus AS estatus_empleado,
+                e.path_avatar as avatar,
                 e.nombre_completo AS nombre_completo,
                 p.id AS puesto_id,
                 p.nombre AS puesto,
