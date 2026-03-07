@@ -11,6 +11,7 @@
 
 ## Architecture
 - Clean Architecture
+- SOLID
 - Controllers -> Services -> Repositories
 - DTOs obligatorios
 - No lógica de negocio en controllers

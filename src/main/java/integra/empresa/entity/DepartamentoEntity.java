@@ -1,5 +1,6 @@
 package integra.empresa.entity;
 
+import integra.empleado.entity.EmpleadoEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,6 +21,10 @@ public class DepartamentoEntity {
     @NotNull
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsable_id")
+    private EmpleadoEntity responsable;
+
 
     public DepartamentoEntity(Integer id) {
         this.id = id;

@@ -1,14 +1,16 @@
 package integra.empleado.repository;
 
-import integra.empleado.entity.EmpleadoEntity;
-import integra.empleado.query.InfoBasicaEmpleadoQuery;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import integra.empleado.entity.EmpleadoEntity;
+import integra.empleado.query.EmpleadoVacacionInfo;
+import integra.empleado.query.InfoBasicaEmpleadoQuery;
 
 public interface EmpleadoRepository extends JpaRepository<EmpleadoEntity, Integer> {
 //    <T> List<T> findBy(Class<T> type);
@@ -21,7 +23,27 @@ public interface EmpleadoRepository extends JpaRepository<EmpleadoEntity, Intege
 
     Optional<EmpleadoEntity> findByCodigoEmpleado(String codigoEmpleado);
 
+    @Query("""
+        SELECT new integra.empleado.query.EmpleadoVacacionInfo(
+            e.id, 
+            e.fechaAlta, 
+            e.fechaReingreso, 
+            e.nombreCompleto, 
+            d.nombre, 
+            u.nombreCompleto, 
+            p.nombre
+        )
+        FROM EmpleadoEntity e
+        LEFT JOIN e.departamento d
+        LEFT JOIN e.unidad u
+        LEFT JOIN e.puesto p
+        WHERE e.id = :id
+    """)
+    Optional<EmpleadoVacacionInfo> findEmpleadoVacacionInfoById(@Param("id") Integer id);
+
     List<InfoBasicaEmpleadoQuery> findByEstatusNot(String estatus);
+    
+    List<InfoBasicaEmpleadoQuery> findByEstatus(String estatus);
 
     /**
      * Permite obtener la lista de empleados aplicando filtro de estatus y puesto
