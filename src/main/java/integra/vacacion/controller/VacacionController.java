@@ -1,17 +1,18 @@
 package integra.vacacion.controller;
 
 import integra.utils.ResponseData;
+import integra.vacacion.domain.model.DashboardSolicitudTiempo;
+import integra.vacacion.domain.model.TipoSolicitud;
 import integra.vacacion.dto.request.SolicitudVacacionRequest;
-import integra.vacacion.dto.response.*;
-import integra.vacacion.service.command.VacacionCommandService;
-import integra.vacacion.service.query.VacacionQueryService;
+import integra.vacacion.dto.response.EmpleadoTiempoHistorialDTO;
+import integra.vacacion.service.command.VacacionTiempoCommandService;
+import integra.vacacion.service.query.DashboardService;
+import integra.vacacion.service.query.VacacionHistorialQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -19,52 +20,45 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VacacionController {
 
-    private final VacacionQueryService queryService;
-    private final VacacionCommandService commandService;
+    private final DashboardService dashboardService;
+    private final VacacionTiempoCommandService vacacionCommandService;
+    private final VacacionHistorialQueryService historialQueryService;
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<DashboardVacacionDTO> getDashboard(@RequestParam Integer empleadoId) {
-        return ResponseEntity.ok(queryService.obtenerDashboard(empleadoId));
+    @GetMapping("dashboard")
+    public ResponseEntity<ResponseData<DashboardSolicitudTiempo>> getDashboard(@RequestParam Integer empleadoId) {
+        return ResponseEntity.ok(ResponseData.of(dashboardService.obtenerDashboard(empleadoId), "Generales"));
     }
 
-    @GetMapping("/disponibles")
-    public ResponseEntity<Integer> getDiasDisponibles(@RequestParam Integer empleadoId) {
-        return ResponseEntity.ok(queryService.obtenerDashboard(empleadoId).diasDisponibles());
+    @PostMapping("solicitud")
+    public ResponseEntity<ResponseData<Void>> createSolicitud(@RequestParam Integer empleadoId, @Valid @RequestBody SolicitudVacacionRequest request) {
+        if (request.tipoSolicitud().equals(TipoSolicitud.VACACION)) {
+            vacacionCommandService.solicitarVacaciones(empleadoId, request);
+        } else if (request.tipoSolicitud().equals(TipoSolicitud.DESCANSO)) {
+            vacacionCommandService.solicitarDescansos(empleadoId, request.diasSeleccionados());
+        }
+        return ResponseEntity.ok(ResponseData.of(null, "Solicitud creada exitosamente"));
     }
 
-    @PostMapping("/solicitudes")
-    public ResponseEntity<SolicitudVacacionDTO> crearSolicitud(@RequestParam Integer empleadoId, @Valid @RequestBody SolicitudVacacionRequest request) {
-        return ResponseEntity.ok(commandService.crearSolicitud(empleadoId, request));
+    @PatchMapping("{id}/cancelar")
+    public ResponseEntity<ResponseData<Void>> cancelarSolicitud(@PathVariable Long id, @RequestParam Integer usuarioId) {
+        vacacionCommandService.cancelarSolicitudVacaciones(id, usuarioId);
+        return ResponseEntity.ok(ResponseData.success("Solicitud cancelada exitosamente", null));
     }
 
-    @GetMapping("/solicitudes")
-    public ResponseEntity<List<SolicitudVacacionDTO>> getHistorial(@RequestParam Integer empleadoId) {
-        return ResponseEntity.ok(queryService.obtenerHistorial(empleadoId));
+    @DeleteMapping("descansos/{id}")
+    public ResponseEntity<ResponseData<Void>> cancelarDescanso(@PathVariable Long id, @RequestParam Integer usuarioId) {
+        vacacionCommandService.cancelarSolicitudDescansos(id, usuarioId);
+        return ResponseEntity.ok(ResponseData.success("Descansos cancelados exitosamente", null));
     }
 
-    @GetMapping("/solicitudes/{id}")
-    public ResponseEntity<SolicitudVacacionDTO> getSolicitud(@PathVariable Long id) {
-        return ResponseEntity.ok(queryService.obtenerSolicitud(id));
+    @GetMapping("solicitudes/{id}/timeline")
+    public ResponseEntity<ResponseData<List<EmpleadoTiempoHistorialDTO>>> obtenerLineaTiempo(@PathVariable Long id) {
+        return ResponseEntity.ok(ResponseData.of(historialQueryService.obtenerLineaTiempo(id), "Línea del tiempo de la solicitud"));
     }
 
-    @DeleteMapping("/solicitudes/{id}")
-    public ResponseEntity<Void> cancelarSolicitud(@PathVariable Long id, @RequestParam Integer empleadoId) {
-        commandService.cancelarSolicitud(id, empleadoId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/calendario-equipo")
-    public ResponseEntity<List<CalendarioEquipoDTO>> getCalendarioEquipo(@RequestParam Integer empleadoId) {
-        return ResponseEntity.ok(queryService.obtenerCalendarioEquipo(empleadoId));
-    }
-
-    @PostMapping("/calcular-dias")
-    public ResponseEntity<CalculoDiasDTO> calcularDias(@RequestParam Integer empleadoId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
-        return ResponseEntity.ok(commandService.preCalcular(empleadoId, inicio, fin));
-    }
-
-    @GetMapping("/calendario-festivo")
-    public ResponseEntity<ResponseData<List<FestivoDTO>>> getCalendarioFestivo(@RequestParam Integer anio) {
-        return ResponseEntity.ok(ResponseData.of(queryService.obtenerCalendarioFestivo(anio), "Festivos oficiales"));
+    @PatchMapping("{id}/reactivar")
+    public ResponseEntity<ResponseData<Void>> reactivar(@PathVariable Long id, @RequestParam Integer usuarioId) {
+        vacacionCommandService.reactivar(id,usuarioId);
+        return ResponseEntity.ok(ResponseData.of(true, "Solicitud creada exitosamente"));
     }
 }

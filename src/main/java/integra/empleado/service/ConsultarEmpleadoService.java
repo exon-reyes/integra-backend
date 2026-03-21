@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class ConsultarEmpleadoPinService {
+public class ConsultarEmpleadoService {
 
     private final EmpleadoRepository empleadoRepository;
 
@@ -42,6 +42,7 @@ public class ConsultarEmpleadoPinService {
         return empleadoRepository.findByPin(pin, type);
     }
 
+    @Cacheable(value = "empleadoPorId", key = "#id + '_' + #type.simpleName")
     public <T> Optional<T> obtenerPorId(Integer id, Class<T> type) {
         return empleadoRepository.findById(id, type);
     }

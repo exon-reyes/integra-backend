@@ -97,35 +97,42 @@ server:
       timeout: 21600s
 
 
-logging: # Nivel global de logging
+logging:
   level:
+    root: INFO
+
+    # Tu dominio
+    integra: INFO
     integra.config.cache.CacheConfig: INFO
     integra.config.cache.CacheService: INFO
     integra.config.cache.CustomCacheErrorHandler: WARN
-    root: INFO  # Nivel de log para la raíz de la aplicación
-  #    com.comialex.helpdesk.ticket: DEBUG  # Nivel de log para un paquete específico
 
-  # Formato del log en consola
+    # Hibernate (CRÍTICO en prod)
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: OFF
+    org.hibernate.type.descriptor.sql: OFF
+
+    # Spring interno (reducir ruido)
+    org.springframework: WARN
+    org.springframework.web: WARN
+
   pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n%throwable"
-
-  # Configuración del archivo de logs
   file:
-    name: logs/integra.log  # Nombre del archivo de log
+    name: logs/integra.log
 
   logback:
     rollingpolicy:
-      file-name-pattern: "logs/archived/integra-%d{yyyy-MM-dd}.%i.log" # Faltaba esto
+      file-name-pattern: "logs/archived/integra-%d{yyyy-MM-dd}.%i.log"
       max-file-size: 10MB
       max-history: 30
       total-size-cap: 100MB
 
-  # Configuraciones adicionales como logs de excepciones
   exception-pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n%throwable"  # Imprimir el stack trace de excepciones en consola
-    file: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n%throwable"  # Imprimir stack trace en archivo
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n%throwable{5}"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n%throwable"
 
 integra:
   cache:
@@ -147,6 +154,16 @@ integra:
         maximumSize: 100
         recordStats: true
         initialCapacity: 30
+      rolPorId:
+        expireAfterWrite: 28d
+        maximumSize: 100
+        recordStats: true
+        initialCapacity: 30
+      empleadoPorId:
+        expireAfterWrite: 1h
+        maximumSize: 5000
+        recordStats: true
+        initialCapacity: 200
       empleadoPorNip:
         expireAfterWrite: 7d        # Expira después de 7 días (más tiempo en producción)
         expireAfterAccess: 24h      # Renueva si se accede en 24 horas

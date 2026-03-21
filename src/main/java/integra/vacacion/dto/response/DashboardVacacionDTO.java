@@ -1,12 +1,12 @@
 package integra.vacacion.dto.response;
 
+import integra.model.Empleado;
+
 import java.time.LocalDate;
 import java.util.List;
 
 public record DashboardVacacionDTO(
-        Integer empleadoId,
-        String nombreCompleto,
-        Integer antiguedadAnios,
+        Empleado empleado,
         Integer diasTotalesAnio,
         Integer diasDisponibles,
         Integer diasDisfrutados,
@@ -16,17 +16,15 @@ public record DashboardVacacionDTO(
         List<ProximaVacacionDTO> proximasVacaciones,
         Integer diasAnualesActual,
         LocalDate proximoAniversario,
-        String departamento,
-        String puesto,
-        String unidad,
         Integer anioGestion,
         Integer diasAprobados,
         Integer diasRechazados,
         Integer diasCancelados,
         List<DescansoDTO> descansosRegistrados,
+        List<DescansoDTO> descansosPendientes,
         List<ProximaVacacionDTO> aprobadosPorTomar,
         List<ProximaVacacionDTO> disfrutados,
-        List<ProximaVacacionDTO> pendientes,
+        List<ProximaVacacionDTO> vacacionesPendientes,
         List<ProximaVacacionDTO> rechazadas,
         List<ProximaVacacionDTO> canceladas
 ) {

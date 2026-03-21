@@ -49,6 +49,12 @@ public class ConsultarCatalogoEmpleados {
         return filtroEmpleadoService.obtenerConFiltro(filtros).stream().map(this::mapToEmpleado).toList();
     }
 
+    public Empleado obtenerEmpleado(Integer id) {
+        return empleadoRepository.findById(id, InfoCatalogoEmpleados.class)
+                .map(this::mapToEmpleado)
+                .orElseThrow(() -> EmpleadoException.notFound(Long.valueOf(id)));
+    }
+
     public List<Empleado> obtenerSupervisores(Boolean activos) {
         FiltroEmpleado filtro = new FiltroEmpleado();
         filtro.setIdPuesto(systemIdProvider.getIdPuestoSupervisor());

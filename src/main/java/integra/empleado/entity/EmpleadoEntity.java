@@ -60,7 +60,7 @@ public class EmpleadoEntity {
     @Column(name = "telefono", length = 15)
     private String telefono;
 
-    @NotNull
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "departamento_id", nullable = false)
     private DepartamentoEntity departamento;

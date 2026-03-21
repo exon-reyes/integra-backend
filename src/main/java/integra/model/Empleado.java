@@ -27,6 +27,11 @@ public class Empleado {
     private Contacto contacto;
     private String sexo;
     private List<Gestor> gestores;
+    private Integer antiguedadAnios;
+
+    public Empleado(Integer id) {
+        this.id = id;
+    }
 
     public Empleado(Integer id, String codigo, String nombreCompleto) {
         this.id = id;
@@ -58,8 +63,7 @@ public class Empleado {
     }
 
     public void setGestor(Gestor gestor) {
-        if (this.gestores == null)
-            this.gestores = new ArrayList<>();
+        if (this.gestores == null) this.gestores = new ArrayList<>();
         this.gestores.add(gestor);
     }
 

@@ -16,7 +16,7 @@ import java.io.IOException;
 @Transactional
 @Slf4j
 public class ActualizarAvatarEmpleado {
-
+    private static final String AVATAR_DEFAULT = "avatar1.svg";
     private final EmpleadoRepository empleadoRepository;
     private final WorkImageService avatarImageService;
 
@@ -26,6 +26,7 @@ public class ActualizarAvatarEmpleado {
     }
 
     public void actualizarAvatar(Integer idEmpleado, String avatarName, String base64Image) {
+
         EmpleadoEntity empleado = empleadoRepository.findById(idEmpleado)
                 .orElseThrow(() -> EmpleadoException.notFound(idEmpleado.longValue()));
 
@@ -43,8 +44,6 @@ public class ActualizarAvatarEmpleado {
         } else {
             throw new IllegalArgumentException("Debe proporcionar un nombre de avatar o una imagen en base64");
         }
-
-        empleadoRepository.save(empleado);
     }
 
     public void eliminarAvatar(Integer idEmpleado) {
@@ -64,10 +63,9 @@ public class ActualizarAvatarEmpleado {
 
     @Transactional(readOnly = true)
     public Resource obtenerAvatarEnBytes(Integer idEmpleado) {
-        EmpleadoEntity empleado = empleadoRepository.findById(idEmpleado)
-                .orElseThrow(() -> EmpleadoException.notFound(idEmpleado.longValue()));
 
-        String pathAvatar = empleado.getPathAvatar();
+        String pathAvatar = empleadoRepository.findAvatarById(idEmpleado).orElse(null);
+
         if (pathAvatar == null || pathAvatar.endsWith(".svg")) {
             return null; // El controller manejará esto
         }

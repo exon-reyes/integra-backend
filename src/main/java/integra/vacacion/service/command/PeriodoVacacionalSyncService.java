@@ -134,21 +134,14 @@ public class PeriodoVacacionalSyncService {
         long aniosCompletos = ChronoUnit.YEARS.between(fechaBase, hoy);
 
         if (aniosCompletos < 1) {
-            log.info("Empleado {} no tiene antigüedad suficiente", empleado.getId());
+            generarPeriodoSinAntiguedad(empleado, fechaBase);
             return;
         }
 
         // Los días se habilitan EN el aniversario, no antes
-        // Si ingresó el 1 ago 2022 y hoy es 5 mar 2026:
-        // - aniosCompletos = 3
-        // - Último aniversario cumplido: 1 ago 2025 (año 3) → 16 días disponibles
-        // - Próximo aniversario: 1 ago 2026 (año 4) → 18 días (aún NO disponibles)
-
-        // El período disponible es del último aniversario CUMPLIDO
         int anioPeriodoDisponible = (int) aniosCompletos;
 
         if (!periodoRepository.existsByEmpleadoIdAndAnioLaboral(empleado.getId(), anioPeriodoDisponible)) {
-            // Política se determina por fecha del ANIVERSARIO
             LocalDate fechaAniversario = fechaBase.plusYears(anioPeriodoDisponible - 1);
 
             PoliticaVacacionEscalaEntity politicaEscala = politicaEscalaRepository
@@ -160,6 +153,33 @@ public class PeriodoVacacionalSyncService {
             log.info("Período generado con política '{}': empleado={}, año={}, aniversario={}",
                     politicaEscala.getNombre(), empleado.getId(), anioPeriodoDisponible, fechaAniversario);
         }
+    }
+
+    private void generarPeriodoSinAntiguedad(EmpleadoEntity empleado, LocalDate fechaBase) {
+        int anioLaboral = 0;
+        if (periodoRepository.existsByEmpleadoIdAndAnioLaboral(empleado.getId(), anioLaboral)) {
+            return;
+        }
+
+        LocalDate finAnio = fechaBase.plusYears(1).minusDays(1);
+
+        PeriodoVacacionalEntity periodo = new PeriodoVacacionalEntity();
+        periodo.setEmpleadoId(empleado.getId());
+        periodo.setAnioLaboral(anioLaboral);
+        periodo.setFechaInicio(fechaBase);
+        periodo.setFechaFin(finAnio);
+        periodo.setDiasHabilitados(0);
+        periodo.setDiasTomados(0);
+        periodo.setDiasRestantes(0);
+        periodo.setFechaCaducidad(finAnio);
+        periodo.setEstatus(PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE);
+        periodo.setCreatedAt(java.time.LocalDateTime.now());
+        periodo.setPeriodoNumero(0);
+        periodo.setAnioGestion(fechaBase.getYear());
+
+        periodoRepository.save(periodo);
+        log.info("Período sin antigüedad creado: empleado={}, ingreso={}, primerAniversario={}",
+                empleado.getId(), fechaBase, finAnio.plusDays(1));
     }
 
 
@@ -215,7 +235,7 @@ public class PeriodoVacacionalSyncService {
         long aniosCompletos = ChronoUnit.YEARS.between(fechaBase, hoy);
 
         if (aniosCompletos < 1) {
-            log.info("Empleado {} no tiene antigüedad suficiente", empleado.getId());
+            generarPeriodoSinAntiguedad(empleado, fechaBase);
             return;
         }
 

@@ -11,7 +11,7 @@
  Target Server Version : 110806 (11.8.6-MariaDB)
  File Encoding         : 65001
 
- Date: 06/03/2026 06:51:01
+ Date: 19/03/2026 21:17:40
 */
 
 SET NAMES utf8mb4;
@@ -82,7 +82,7 @@ CREATE TABLE `asistencia`  (
   INDEX `idx_inconistencia_kiosco`(`inconsistencia` ASC) USING BTREE,
   INDEX `idx_empleado_fecha`(`id_empleado` ASC, `fecha` ASC) USING BTREE,
   CONSTRAINT `fk_empleado_asistencia` FOREIGN KEY (`id_empleado`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 5589 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5590 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for auditoria
@@ -228,18 +228,23 @@ CREATE TABLE `departamento`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `descansos_empleado`;
 CREATE TABLE `descansos_empleado`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `empleado_id` int(11) NOT NULL,
-  `fecha_descanso` date NOT NULL,
-  `motivo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `activo` tinyint(1) NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del descanso registrado',
+  `empleado_id` int(11) NOT NULL COMMENT 'Identificador del empleado al que pertenece el descanso',
+  `fecha_descanso` date NOT NULL COMMENT 'Fecha específica del descanso solicitado o asignado',
+  `comentario` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Motivo o descripción del descanso solicitado',
+  `activo` tinyint(1) NULL DEFAULT 1 COMMENT 'Indica si el registro está activo (1=activo, 0=inactivo)',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha y hora de creación del registro',
+  `estatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL DEFAULT 'PENDIENTE' COMMENT 'Estado del descanso (PENDIENTE, APROBADO, RECHAZADO)',
+  `aprobador_id` int(11) NULL DEFAULT NULL COMMENT 'Identificador del usuario o supervisor que aprobó o rechazó el descanso',
+  `fecha_aprobacion` datetime NULL DEFAULT NULL COMMENT 'Fecha y hora en que se realizó la aprobación o rechazo',
+  `comentarios_aprobador` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Comentarios del aprobador respecto a la decisión tomada',
+  `periodo_id` bigint(20) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_empleado_fecha`(`empleado_id` ASC, `fecha_descanso` ASC) USING BTREE,
   INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE,
   INDEX `idx_fecha`(`fecha_descanso` ASC) USING BTREE,
   INDEX `idx_activo`(`activo` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Registro de descansos individuales asignados o solicitados por empleados' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for empleado
@@ -285,19 +290,60 @@ CREATE TABLE `empleado`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 7339 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Table structure for empleado_tiempo
+-- ----------------------------
+DROP TABLE IF EXISTS `empleado_tiempo`;
+CREATE TABLE `empleado_tiempo`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del evento',
+  `empleado_id` int(11) NOT NULL COMMENT 'Empleado al que pertenece el registro',
+  `fecha` date NOT NULL COMMENT 'Fecha específica del evento',
+  `tipo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL COMMENT 'Tipo de evento: VACACION, DESCANSO',
+  `comentario` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Motivo o descripción',
+  `estatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'PENDIENTE' COMMENT 'PENDIENTE, APROBADO, RECHAZADO',
+  `aprobador_id` int(11) NULL DEFAULT NULL COMMENT 'Usuario que aprobó o rechazó',
+  `fecha_aprobacion` datetime NULL DEFAULT NULL COMMENT 'Momento de aprobación',
+  `comentarios_aprobador` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Comentarios del aprobador',
+  `periodo_id` bigint(20) NULL DEFAULT NULL COMMENT 'Periodo vacacional al que pertenece',
+  `activo` tinyint(1) NULL DEFAULT 1 COMMENT '1 activo, 0 inactivo',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_empleado_fecha_tipo`(`empleado_id` ASC, `fecha` ASC, `tipo` ASC) USING BTREE,
+  INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE,
+  INDEX `idx_fecha`(`fecha` ASC) USING BTREE,
+  INDEX `idx_tipo`(`tipo` ASC) USING BTREE,
+  INDEX `idx_estatus`(`estatus` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Eventos de tiempo del empleado (vacaciones y descansos)' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for empleado_tiempo_historial
+-- ----------------------------
+DROP TABLE IF EXISTS `empleado_tiempo_historial`;
+CREATE TABLE `empleado_tiempo_historial`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `solicitud_id` bigint(20) NOT NULL,
+  `fecha_evento` datetime NOT NULL,
+  `tipo_evento` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
+  `usuario_id` int(11) NULL DEFAULT NULL,
+  `comentario` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `fk_historial_solicitud`(`solicitud_id` ASC) USING BTREE,
+  CONSTRAINT `fk_historial_solicitud` FOREIGN KEY (`solicitud_id`) REFERENCES `empleado_tiempo` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for escalas_vacaciones
 -- ----------------------------
 DROP TABLE IF EXISTS `escalas_vacaciones`;
 CREATE TABLE `escalas_vacaciones`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `politica_id` bigint(20) NOT NULL,
-  `anio_antiguedad` int(11) NOT NULL,
-  `dias_vacaciones` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la escala de vacaciones',
+  `politica_id` bigint(20) NOT NULL COMMENT 'Referencia a la política de vacaciones a la que pertenece la escala',
+  `anio_antiguedad` int(11) NOT NULL COMMENT 'Número de años de antigüedad del empleado',
+  `dias_vacaciones` int(11) NOT NULL COMMENT 'Cantidad de días de vacaciones asignados para ese nivel de antigüedad',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_politica_anio`(`politica_id` ASC, `anio_antiguedad` ASC) USING BTREE,
   INDEX `idx_politica`(`politica_id` ASC) USING BTREE,
   CONSTRAINT `fk_escala_politica` FOREIGN KEY (`politica_id`) REFERENCES `politicas_vacaciones_escalas` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 71 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 71 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Tabla que define los días de vacaciones según la antigüedad del empleado' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for estado
@@ -331,18 +377,18 @@ CREATE TABLE `estatus`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `festivos_oficiales`;
 CREATE TABLE `festivos_oficiales`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `fecha` date NOT NULL,
-  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `tipo` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'OFICIAL',
-  `activo` tinyint(1) NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del día festivo',
+  `fecha` date NOT NULL COMMENT 'Fecha del día festivo',
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL COMMENT 'Nombre del día festivo',
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Descripción adicional del festivo',
+  `tipo` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'OFICIAL' COMMENT 'Tipo de festivo (OFICIAL, EMPRESA, REGIONAL)',
+  `activo` tinyint(1) NULL DEFAULT 1 COMMENT 'Indica si el festivo está activo',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha de creación del registro',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `fecha`(`fecha` ASC) USING BTREE,
   INDEX `idx_fecha`(`fecha` ASC) USING BTREE,
   INDEX `idx_activo`(`activo` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 39 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Catálogo de días festivos oficiales o definidos por la empresa' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for historial_jornada
@@ -434,7 +480,7 @@ CREATE TABLE `incidencia_kiosco`  (
   INDEX `idx_entidad`(`entidad_id` ASC) USING BTREE COMMENT 'Índice compuesto para búsquedas rápidas por tipo de entidad e ID',
   INDEX `idx_tipo`(`tipo_incidencia` ASC) USING BTREE COMMENT 'Índice para filtrar por tipo de inconsistencia',
   INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE COMMENT 'Índice para filtrar/buscar incidencias por empleado'
-) ENGINE = InnoDB AUTO_INCREMENT = 1540 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Tabla que almacena todas las incidencias detectadas en registros de asistencia y pausas, permitiendo la auditoría y análisis de inconsistencias.' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1542 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Tabla que almacena todas las incidencias detectadas en registros de asistencia y pausas, permitiendo la auditoría y análisis de inconsistencias.' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for jornada
@@ -701,62 +747,62 @@ CREATE TABLE `pausa`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `periodos_vacacionales`;
 CREATE TABLE `periodos_vacacionales`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `empleado_id` int(11) NOT NULL,
-  `anio_laboral` int(11) NOT NULL,
-  `fecha_inicio` date NOT NULL,
-  `fecha_fin` date NOT NULL,
-  `dias_habilitados` int(11) NOT NULL,
-  `dias_tomados` int(11) NULL DEFAULT 0,
-  `dias_restantes` int(11) NOT NULL,
-  `fecha_caducidad` date NOT NULL,
-  `estatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'VIGENTE',
-  `periodo_numero` int(11) NULL DEFAULT NULL,
-  `anio_gestion` int(11) NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del periodo vacacional del empleado',
+  `empleado_id` int(11) NOT NULL COMMENT 'Identificador del empleado al que pertenece el periodo',
+  `anio_laboral` int(11) NOT NULL COMMENT 'Año laboral del periodo de vacaciones',
+  `fecha_inicio` date NOT NULL COMMENT 'Fecha en que inicia el periodo de acumulación de vacaciones',
+  `fecha_fin` date NOT NULL COMMENT 'Fecha en que termina el periodo de acumulación de vacaciones',
+  `dias_habilitados` int(11) NOT NULL COMMENT 'Total de días de vacaciones otorgados en el periodo',
+  `dias_tomados` int(11) NULL DEFAULT 0 COMMENT 'Días de vacaciones que el empleado ya utilizó',
+  `dias_restantes` int(11) NOT NULL COMMENT 'Días de vacaciones disponibles para el empleado',
+  `fecha_caducidad` date NOT NULL COMMENT 'Fecha límite para usar los días de vacaciones antes de expirar',
+  `estatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'VIGENTE' COMMENT 'Estado del periodo (VIGENTE, CADUCADO, CERRADO)',
+  `periodo_numero` int(11) NULL DEFAULT NULL COMMENT 'Número de periodo dentro del historial del empleado',
+  `anio_gestion` int(11) NULL DEFAULT NULL COMMENT 'Año administrativo en que se gestiona el periodo',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha de creación del registro',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_empleado_anio`(`empleado_id` ASC, `anio_laboral` ASC) USING BTREE,
   INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE,
   INDEX `idx_estatus`(`estatus` ASC) USING BTREE,
   INDEX `idx_caducidad`(`fecha_caducidad` ASC) USING BTREE,
   INDEX `idx_periodo_vigente`(`empleado_id` ASC, `estatus` ASC, `fecha_caducidad` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 294 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 457 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Periodos vacacionales acumulados por cada empleado según su antigüedad' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for periodos_veda
 -- ----------------------------
 DROP TABLE IF EXISTS `periodos_veda`;
 CREATE TABLE `periodos_veda`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `fecha_inicio` date NOT NULL,
-  `fecha_fin` date NOT NULL,
-  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `activo` tinyint(1) NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador del periodo de restricción de vacaciones',
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL COMMENT 'Nombre del periodo de veda',
+  `fecha_inicio` date NOT NULL COMMENT 'Fecha de inicio del periodo en el que no se permiten vacaciones',
+  `fecha_fin` date NOT NULL COMMENT 'Fecha de finalización del periodo de veda',
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Descripción o motivo de la restricción',
+  `activo` tinyint(1) NULL DEFAULT 1 COMMENT 'Indica si el periodo de veda está activo',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha de creación del registro',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_fechas`(`fecha_inicio` ASC, `fecha_fin` ASC) USING BTREE,
   INDEX `idx_activo`(`activo` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Periodos en los que la empresa restringe la solicitud de vacaciones' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for politicas_vacaciones_escalas
 -- ----------------------------
 DROP TABLE IF EXISTS `politicas_vacaciones_escalas`;
 CREATE TABLE `politicas_vacaciones_escalas`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `fecha_vigencia_inicio` date NOT NULL,
-  `fecha_vigencia_fin` date NULL DEFAULT NULL,
-  `activa` tinyint(1) NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de la política de vacaciones',
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL COMMENT 'Nombre de la política de vacaciones',
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Descripción detallada de la política',
+  `fecha_vigencia_inicio` date NOT NULL COMMENT 'Fecha en que inicia la vigencia de la política',
+  `fecha_vigencia_fin` date NULL DEFAULT NULL COMMENT 'Fecha en que termina la vigencia de la política',
+  `activa` tinyint(1) NULL DEFAULT 1 COMMENT 'Indica si la política está actualmente activa',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha de creación del registro',
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última actualización',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `nombre`(`nombre` ASC) USING BTREE,
   INDEX `idx_vigencia`(`fecha_vigencia_inicio` ASC, `fecha_vigencia_fin` ASC) USING BTREE,
   INDEX `idx_activa`(`activa` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Políticas de vacaciones configurables utilizadas para calcular días por antigüedad' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for puesto
@@ -822,24 +868,25 @@ CREATE TABLE `security_node`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `solicitudes_vacaciones`;
 CREATE TABLE `solicitudes_vacaciones`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `empleado_id` int(11) NOT NULL,
-  `fecha_inicio` date NOT NULL,
-  `fecha_fin` date NOT NULL,
-  `dias_solicitados` int(11) NOT NULL,
-  `motivo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `estatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'PENDIENTE',
-  `aprobador_id` int(11) NULL DEFAULT NULL,
-  `fecha_aprobacion` timestamp NULL DEFAULT NULL,
-  `comentarios_aprobador` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la solicitud de vacaciones',
+  `empleado_id` int(11) NOT NULL COMMENT 'Empleado que realiza la solicitud',
+  `fecha_inicio` date NOT NULL COMMENT 'Fecha de inicio del periodo solicitado',
+  `fecha_fin` date NOT NULL COMMENT 'Fecha de finalización del periodo solicitado',
+  `dias_solicitados` int(11) NOT NULL COMMENT 'Cantidad de días solicitados',
+  `comentario` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Motivo de la solicitud de vacaciones',
+  `estatus` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT 'PENDIENTE' COMMENT 'Estado de la solicitud (PENDIENTE, APROBADO, RECHAZADO)',
+  `aprobador_id` int(11) NULL DEFAULT NULL COMMENT 'Usuario responsable de aprobar o rechazar la solicitud',
+  `fecha_aprobacion` timestamp NULL DEFAULT NULL COMMENT 'Fecha en que se tomó la decisión de aprobación',
+  `comentarios_aprobador` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Comentarios del aprobador sobre la solicitud',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha de creación de la solicitud',
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+  `periodo_id` bigint(11) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE,
   INDEX `idx_estatus`(`estatus` ASC) USING BTREE,
   INDEX `idx_fechas`(`fecha_inicio` ASC, `fecha_fin` ASC) USING BTREE,
   INDEX `idx_solicitud_rango`(`empleado_id` ASC, `fecha_inicio` ASC, `fecha_fin` ASC, `estatus` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Solicitudes de vacaciones realizadas por los empleados' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for stock_toner_unidad
@@ -1066,17 +1113,17 @@ CREATE TABLE `users`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `vacaciones_auditoria`;
 CREATE TABLE `vacaciones_auditoria`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `solicitud_id` bigint(20) NOT NULL,
-  `accion` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `usuario_id` int(11) NOT NULL,
-  `detalles` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del registro de auditoría',
+  `solicitud_id` bigint(20) NOT NULL COMMENT 'Referencia a la solicitud de vacaciones afectada',
+  `accion` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL COMMENT 'Tipo de acción registrada (CREAR, APROBAR, RECHAZAR, MODIFICAR)',
+  `usuario_id` int(11) NOT NULL COMMENT 'Usuario que realizó la acción',
+  `detalles` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Información adicional sobre el cambio realizado',
+  `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha en que se registró la acción',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_solicitud`(`solicitud_id` ASC) USING BTREE,
   INDEX `idx_fecha`(`created_at` ASC) USING BTREE,
   CONSTRAINT `fk_auditoria_solicitud` FOREIGN KEY (`solicitud_id`) REFERENCES `solicitudes_vacaciones` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Registro de auditoría de acciones realizadas sobre solicitudes de vacaciones' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for vinculacion_gestion
@@ -1099,54 +1146,6 @@ CREATE TABLE `vinculacion_gestion`  (
   CONSTRAINT `fk_vinculo_gestor` FOREIGN KEY (`gestor_id`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `fk_vinculo_tipo_proceso` FOREIGN KEY (`tipo_proceso_id`) REFERENCES `tipo_proceso` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for vm_observaciones_por_departamento
--- ----------------------------
-DROP TABLE IF EXISTS `vm_observaciones_por_departamento`;
-CREATE TABLE `vm_observaciones_por_departamento`  (
-  `departamento_id` smallint(5) UNSIGNED NOT NULL,
-  `departamento_nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `total_asignadas` int(10) UNSIGNED NULL DEFAULT 0,
-  `pendientes` int(10) UNSIGNED NULL DEFAULT 0,
-  `en_proceso` int(10) UNSIGNED NULL DEFAULT 0,
-  `resueltas_mes` int(10) UNSIGNED NULL DEFAULT 0,
-  `vencidas` int(10) UNSIGNED NULL DEFAULT 0,
-  `promedio_dias_atencion` decimal(5, 2) NULL DEFAULT NULL,
-  `efectividad_porcentaje` decimal(5, 2) NULL DEFAULT NULL,
-  `colaboraciones_activas` int(10) UNSIGNED NULL DEFAULT 0,
-  `ultima_actualizacion` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`departamento_id`) USING BTREE,
-  INDEX `idx_vm_obs_depto_pendientes`(`pendientes` DESC) USING BTREE,
-  INDEX `idx_vm_obs_depto_efectividad`(`efectividad_porcentaje` DESC) USING BTREE,
-  INDEX `idx_vm_obs_depto_vencidas`(`vencidas` DESC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Vista materializada: Resumen de observaciones por departamento' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for vm_observaciones_por_unidad
--- ----------------------------
-DROP TABLE IF EXISTS `vm_observaciones_por_unidad`;
-CREATE TABLE `vm_observaciones_por_unidad`  (
-  `unidad_id` smallint(5) UNSIGNED NOT NULL,
-  `unidad_clave` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `unidad_nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `zona_nombre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `supervisor_nombre` varchar(152) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL,
-  `total_observaciones` int(10) UNSIGNED NULL DEFAULT 0,
-  `pendientes` int(10) UNSIGNED NULL DEFAULT 0,
-  `en_proceso` int(10) UNSIGNED NULL DEFAULT 0,
-  `resueltas` int(10) UNSIGNED NULL DEFAULT 0,
-  `vencidas` int(10) UNSIGNED NULL DEFAULT 0,
-  `criticas_abiertas` int(10) UNSIGNED NULL DEFAULT 0,
-  `promedio_dias_resolucion` decimal(5, 2) NULL DEFAULT NULL,
-  `ultima_auditoria` date NULL DEFAULT NULL,
-  `ultima_actualizacion` timestamp NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`unidad_id`) USING BTREE,
-  INDEX `idx_vm_obs_unidad_pendientes`(`pendientes` DESC) USING BTREE,
-  INDEX `idx_vm_obs_unidad_vencidas`(`vencidas` DESC) USING BTREE,
-  INDEX `idx_vm_obs_unidad_criticas`(`criticas_abiertas` DESC) USING BTREE,
-  INDEX `idx_vm_obs_unidad_zona`(`zona_nombre` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Vista materializada: Resumen de observaciones por unidad' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for zona

@@ -2,7 +2,7 @@ package integra.vacacion.dto.response;
 
 import java.time.LocalDate;
 
-public record FestivoDTO(
+public record Festivo(
         Long id,
         LocalDate fecha,
         String nombre,

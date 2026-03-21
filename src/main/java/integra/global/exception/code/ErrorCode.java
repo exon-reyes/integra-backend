@@ -169,8 +169,8 @@ public enum ErrorCode {
     VAC_GESTOR_NO_ENCONTRADO("VAC-013", "Gestor/Aprobador no encontrado", 404),
     VAC_PERIODO_NO_ENCONTRADO("VAC-014", "Período vacacional no encontrado", 404),
     VAC_ERROR_TECNICO("VAC-015", "Error técnico al procesar la solicitud", 500),
-    VAC_DESCANSOS_NO_CONFIGURADOS("VAC-016", "Días de descanso no configurados", 400);
-
+    VAC_DESCANSOS_NO_CONFIGURADOS("VAC-016", "Días de descanso no configurados", 400),
+    VAC_REACTIVACION_RECHAZADA("VAC-017","No se puede reactivar la solicitud",400);
     private final String code;
     private final String title;
     private final int httpStatus;

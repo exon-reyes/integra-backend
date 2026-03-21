@@ -49,6 +49,9 @@
 - Validar DTOs con Validation (@Valid) en el Controller.
 - No exponer entidades directamente.
 
+## Exception Handling
+- Utiliza la estadarización de excepciones implementada en el proyecto(ref: llm exception.md)
+
 ## Spring Data JPA Guidelines
 
 ### Repositories

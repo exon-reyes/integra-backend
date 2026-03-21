@@ -1,48 +1,36 @@
 package integra.empleado.repository;
 
+import integra.empleado.entity.EmpleadoEntity;
+import integra.empleado.query.InfoBasicaEmpleadoQuery;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import integra.empleado.entity.EmpleadoEntity;
-import integra.empleado.query.EmpleadoVacacionInfo;
-import integra.empleado.query.InfoBasicaEmpleadoQuery;
 
 public interface EmpleadoRepository extends JpaRepository<EmpleadoEntity, Integer> {
 //    <T> List<T> findBy(Class<T> type);
 
     <T> Optional<T> findByPin(String clave, Class<T> type);
 
+    @Transactional
+    @Modifying
+    @Query("update EmpleadoEntity e set e.pathAvatar = ?1 where e.id = ?2")
+    int actualizarAvatar(String pathAvatar, Integer id);
+
     <T> Optional<T> findById(Integer integer, Class<T> type);
 
     <T> Optional<T> findByCodigoEmpleado(String codigo, Class<T> type);
 
+    @Query("SELECT e.pathAvatar FROM EmpleadoEntity e WHERE e.id = :id")
+    Optional<String> findAvatarById(@Param("id") Integer id);
+
     Optional<EmpleadoEntity> findByCodigoEmpleado(String codigoEmpleado);
 
-    @Query("""
-        SELECT new integra.empleado.query.EmpleadoVacacionInfo(
-            e.id, 
-            e.fechaAlta, 
-            e.fechaReingreso, 
-            e.nombreCompleto, 
-            d.nombre, 
-            u.nombreCompleto, 
-            p.nombre
-        )
-        FROM EmpleadoEntity e
-        LEFT JOIN e.departamento d
-        LEFT JOIN e.unidad u
-        LEFT JOIN e.puesto p
-        WHERE e.id = :id
-    """)
-    Optional<EmpleadoVacacionInfo> findEmpleadoVacacionInfoById(@Param("id") Integer id);
-
-    List<InfoBasicaEmpleadoQuery> findByEstatusNot(String estatus);
-    
     List<InfoBasicaEmpleadoQuery> findByEstatus(String estatus);
 
     /**
@@ -81,14 +69,6 @@ public interface EmpleadoRepository extends JpaRepository<EmpleadoEntity, Intege
                 AND (:supervisorId IS NULL OR e.jefe.id = :supervisorId)
                 ORDER BY e.nombreCompleto
             """)
-    List<EmpleadoEntity> findEmpleadosSinAsistenciaEnRango(
-            @Param("estatus") String estatus,
-            @Param("fechaInicio") LocalDate fechaInicio,
-            @Param("fechaFin") LocalDate fechaFin,
-            @Param("unidadId") Integer unidadId,
-            @Param("puestoId") Integer puestoId,
-            @Param("zonaId") Integer zonaId,
-            @Param("supervisorId") Integer supervisorId
-    );
+    List<EmpleadoEntity> findEmpleadosSinAsistenciaEnRango(@Param("estatus") String estatus, @Param("fechaInicio") LocalDate fechaInicio, @Param("fechaFin") LocalDate fechaFin, @Param("unidadId") Integer unidadId, @Param("puestoId") Integer puestoId, @Param("zonaId") Integer zonaId, @Param("supervisorId") Integer supervisorId);
 
 }

@@ -268,7 +268,7 @@ application-dev.yml
 :
 logging:
   level:
-    integra.empleado.service.ConsultarEmpleadoPinService: DEBUG
+    integra.empleado.service.ConsultarEmpleadoService: DEBUG
 Reiniciar aplicación
 Consultar un empleado por NIP desde el kiosco
 Revisar logs y verificar:

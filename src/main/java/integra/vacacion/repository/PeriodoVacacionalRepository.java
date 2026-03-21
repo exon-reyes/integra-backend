@@ -3,9 +3,11 @@ package integra.vacacion.repository;
 import integra.vacacion.entity.PeriodoVacacionalEntity;
 import integra.vacacion.entity.PeriodoVacacionalEntity.EstatusPeriodo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,6 +42,14 @@ public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacaci
     List<PeriodoVacacionalEntity> findPeriodosVencidos(@Param("fecha") LocalDate fecha);
 
     Optional<PeriodoVacacionalEntity> findByEmpleadoIdAndAnioLaboral(Integer empleadoId, Integer anioLaboral);
+
+    Optional<PeriodoVacacionalEntity> findPeriodoVacacionalEntityByEmpleadoIdAndEstatus(Integer empleadoId, EstatusPeriodo estatus);
+
+    @Transactional
+    @Modifying
+    @Query("update PeriodoVacacionalEntity p set p.diasRestantes = ?1 where p.id = ?2")
+    void actualizarDisponibilidadad(Integer diasRestantes, Long id);
+
 
     boolean existsByEmpleadoIdAndAnioLaboral(Integer empleadoId, Integer anioLaboral);
 }
