@@ -21,10 +21,9 @@ public class SolicitudEmpleado implements Serializable {
     private TipoSolicitud tipo;
     private String comentario;
     private EstatusSolicitud estatus;
-    private Integer aprobadorId;
     private LocalDateTime fechaAprobacion;
     private String comentariosAprobador;
     private Long periodoId;
     private Boolean activo;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 }

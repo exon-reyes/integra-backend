@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class VacacionHistorialCommandService {
+public class VacacionHistorialService {
 
     private final EmpleadoTiempoHistorialRepository historialRepository;
 

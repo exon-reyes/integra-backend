@@ -3,7 +3,6 @@ package integra.empleado.entity;
 import integra.empresa.entity.DepartamentoEntity;
 import integra.empresa.entity.PuestoEntity;
 import integra.empresa.entity.UnidadEntity;
-import integra.proceso.entity.VinculacionGestionEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -114,11 +112,7 @@ public class EmpleadoEntity {
 
     @OneToMany(mappedBy = "jefe", fetch = FetchType.LAZY)
     private List<EmpleadoEntity> plantilla = new ArrayList<>();
-    @OneToMany
 
-    @JoinColumn(name = "empleado_id")
-    @OrderBy("nivelAutoridad ASC")
-    private Set<VinculacionGestionEntity> vinculacionGestions;
 
     @Column(name = "path_avatar")
     private String pathAvatar;
@@ -126,6 +120,11 @@ public class EmpleadoEntity {
     @Column(name = "nombre_completo", insertable = false, updatable = false)
     private String nombreCompleto;
 
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "segundo_jefe_id")
+    private EmpleadoEntity segundoJefe;
 
     public EmpleadoEntity(Integer id) {
         this.id = id;

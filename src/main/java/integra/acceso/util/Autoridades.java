@@ -95,6 +95,9 @@ public final class Autoridades {
     public static final String TIPO_CUENTA_EDITAR_PROVEEDOR = "hasAuthority('DD3')";
     public static final String TIPO_CUENTA_ELIMINAR_PROVEEDOR = "hasAuthority('DD4')";
 
+    public static final String AUSENCIAS_PERMISO_NIVEL1="hasAuthority('EB4')";
+    public static final String AUSENCIAS_PERMISO_NIVEL2="hasAuthority('EB5')";
+
     private Autoridades() {
         // Evitar instanciación
     }

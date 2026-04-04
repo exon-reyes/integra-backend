@@ -1,7 +1,7 @@
 package integra.vacacion.repository;
 
+import integra.vacacion.core.EstatusPeriodo;
 import integra.vacacion.entity.PeriodoVacacionalEntity;
-import integra.vacacion.entity.PeriodoVacacionalEntity.EstatusPeriodo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,32 +16,13 @@ import java.util.Optional;
 @Repository
 public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacacionalEntity, Long> {
 
-    List<PeriodoVacacionalEntity> findByEmpleadoIdOrderByAnioLaboralDesc(Integer empleadoId);
 
     List<PeriodoVacacionalEntity> findByEmpleadoId(Integer empleadoId);
 
-    List<PeriodoVacacionalEntity> findByEmpleadoIdAndEstatus(Integer empleadoId, EstatusPeriodo estatus);
 
-    @Query("SELECT COALESCE(SUM(p.diasRestantes), 0) FROM PeriodoVacacionalEntity p " +
-            "WHERE p.empleadoId = :empleadoId AND p.estatus = 'VIGENTE'")
-    Integer sumDiasRestantesByEmpleado(@Param("empleadoId") Integer empleadoId);
-
-    @Query("SELECT p FROM PeriodoVacacionalEntity p WHERE p.empleadoId = :empleadoId " +
-            "AND p.estatus = 'VIGENTE' AND p.diasRestantes > 0 ORDER BY p.fechaCaducidad ASC")
-    List<PeriodoVacacionalEntity> findPeriodosDisponiblesOrdenados(@Param("empleadoId") Integer empleadoId);
-
-    @Query("SELECT p FROM PeriodoVacacionalEntity p WHERE p.empleadoId = :empleadoId " +
-            "AND p.fechaCaducidad BETWEEN :inicio AND :fin AND p.estatus = 'VIGENTE'")
-    List<PeriodoVacacionalEntity> findPeriodosProximosAVencer(
-            @Param("empleadoId") Integer empleadoId,
-            @Param("inicio") LocalDate inicio,
-            @Param("fin") LocalDate fin);
-
-    @Query("SELECT p FROM PeriodoVacacionalEntity p WHERE p.fechaCaducidad < :fecha " +
-            "AND p.estatus = 'VIGENTE'")
+    @Query("SELECT p FROM PeriodoVacacionalEntity p WHERE p.fechaCaducidad < :fecha " + "AND p.estatus = 'VIGENTE'")
     List<PeriodoVacacionalEntity> findPeriodosVencidos(@Param("fecha") LocalDate fecha);
 
-    Optional<PeriodoVacacionalEntity> findByEmpleadoIdAndAnioLaboral(Integer empleadoId, Integer anioLaboral);
 
     Optional<PeriodoVacacionalEntity> findPeriodoVacacionalEntityByEmpleadoIdAndEstatus(Integer empleadoId, EstatusPeriodo estatus);
 
@@ -49,6 +30,8 @@ public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacaci
     @Modifying
     @Query("update PeriodoVacacionalEntity p set p.diasRestantes = ?1 where p.id = ?2")
     void actualizarDisponibilidadad(Integer diasRestantes, Long id);
+
+    List<PeriodoVacacionalEntity> findByEstatus(EstatusPeriodo estatus);
 
 
     boolean existsByEmpleadoIdAndAnioLaboral(Integer empleadoId, Integer anioLaboral);

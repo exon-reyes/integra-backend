@@ -1,6 +1,9 @@
 package integra.vacacion.entity;
 
+import integra.empleado.entity.EmpleadoEntity;
+import integra.vacacion.core.EstatusPeriodo;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -19,8 +22,7 @@ public class PeriodoVacacionalEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "empleado_id", nullable = false)
-    private Integer empleadoId;
+
 
     @Column(name = "anio_laboral", nullable = false)
     private Integer anioLaboral;
@@ -56,16 +58,16 @@ public class PeriodoVacacionalEntity {
 
     @Column(name = "anio_gestion")
     private Integer anioGestion;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empleado_id", nullable = false)
+    private EmpleadoEntity empleado;
 
-    public void descontarDias(int dias) {
-        this.diasTomados += dias;
-        this.diasRestantes -= dias;
-        if (this.diasRestantes <= 0) {
-            this.estatus = EstatusPeriodo.CONSUMIDO;
-        }
+    public PeriodoVacacionalEntity(Long id) {
+        this.id = id;
     }
 
-    public enum EstatusPeriodo {
-        VIGENTE, VENCIDO, CONSUMIDO
+    public PeriodoVacacionalEntity() {
     }
+
 }

@@ -1,0 +1,105 @@
+# ========================================================
+# Caddyfile - Angular + Spring Boot en Windows
+# Producción, acceso desde internet en puerto 4200
+# ========================================================
+
+(app_config) {
+    # Root del frontend Angular
+    root * C:\caddy\sci\dist
+    file_server
+
+    # Headers de seguridad
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "no-referrer-when-downgrade"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
+
+    # ⚠️ IMPORTANTE: Proxy al backend ANTES de archivos estáticos
+    @api path /comialex/api/*
+    handle @api {
+        reverse_proxy localhost:8081 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+            transport http {
+                dial_timeout 30s
+                response_header_timeout 600s
+            }
+        }
+    }
+
+    # Uploads
+    handle /uploads/* {
+        root * C:\caddy\sci\uploads
+        file_server browse
+
+        # Bloqueo de archivos peligrosos
+        @dangerous path *.php *.jsp *.cgi *.asp *.aspx
+        respond @dangerous 403
+    }
+
+    # Archivos estáticos con cache largo (DESPUÉS del proxy API)
+    @static path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot
+    handle @static {
+        header Cache-Control "public, max-age=31536000, immutable"
+        header Vary "Accept-Encoding"
+        file_server
+    }
+
+    # Manifest / Service Worker sin cache
+    @manifest path *.webmanifest *.json /sw.js
+    handle @manifest {
+        header Cache-Control "no-cache, no-store, must-revalidate"
+        header Pragma "no-cache"
+        header Expires "0"
+        file_server
+    }
+
+    # SPA Angular routing
+    handle {
+        header Cache-Control "no-cache, no-store, must-revalidate"
+        header Pragma "no-cache"
+        header Expires "0"
+        try_files {path} {path}/ /index.html
+        file_server
+    }
+
+    # Compresión gzip
+    encode gzip
+
+    # Request body size limit
+    request_body {
+        max_size 10MB
+    }
+
+    # Logs de acceso
+    log {
+        output file C:\caddy\sci\logs\access.log {
+            roll_size 10MB
+            roll_keep 10
+        }
+        level INFO
+    }
+}
+
+# Redirección HTTP → HTTPS
+sci.ddns.me:80 {
+    redir https://{host}:4200{uri} permanent
+}
+
+# Servidor HTTPS Angular + Proxy Spring Boot (Original)
+sci.ddns.me:4200 {
+    # Certificados SSL locales
+    tls C:\caddy\sci\ssl\sci_ddns_me.pem C:\caddy\sci\ssl\sci_ddns_me.key
+    import app_config
+}
+
+# Servidor HTTP Privado para Cloudflare Tunnel
+http://comialex.work:4201, http://127.0.0.1:4201 {
+    import app_config
+}

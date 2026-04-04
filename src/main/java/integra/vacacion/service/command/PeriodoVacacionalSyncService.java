@@ -4,6 +4,7 @@ import integra.empleado.entity.EmpleadoEntity;
 import integra.empleado.exception.EmpleadoException;
 import integra.empleado.query.InfoBasicaEmpleadoQuery;
 import integra.empleado.repository.EmpleadoRepository;
+import integra.vacacion.core.EstatusPeriodo;
 import integra.vacacion.entity.PeriodoVacacionalEntity;
 import integra.vacacion.entity.PoliticaVacacionEntity;
 import integra.vacacion.entity.PoliticaVacacionEscalaEntity;
@@ -57,16 +58,14 @@ public class PeriodoVacacionalSyncService {
 
     @Transactional
     public void generarPeriodo(EmpleadoEntity empleado, PoliticaVacacionEntity politica) {
-        LocalDate fechaBase = empleado.getFechaReingreso() != null
-                ? empleado.getFechaReingreso()
-                : empleado.getFechaAlta();
+        LocalDate fechaBase = empleado.getFechaReingreso() != null ? empleado.getFechaReingreso() : empleado.getFechaAlta();
 
         long aniosCompletos = ChronoUnit.YEARS.between(fechaBase, LocalDate.now());
         int diasCorresponden = calcularDiasSegunAntiguedad((int) aniosCompletos, politica);
         LocalDate inicioAnio = fechaBase.plusYears(aniosCompletos - 1);
 
         PeriodoVacacionalEntity periodo = new PeriodoVacacionalEntity();
-        periodo.setEmpleadoId(empleado.getId());
+        periodo.setEmpleado(new EmpleadoEntity(empleado.getId()));
         periodo.setAnioLaboral((int) aniosCompletos);
         periodo.setFechaInicio(inicioAnio);
         periodo.setFechaFin(inicioAnio.plusYears(1).minusDays(1));
@@ -74,15 +73,14 @@ public class PeriodoVacacionalSyncService {
         periodo.setDiasTomados(0);
         periodo.setDiasRestantes(diasCorresponden);
         periodo.setFechaCaducidad(inicioAnio.plusYears(1).minusDays(1)); // Fin del año laboral
-        periodo.setEstatus(PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE);
+        periodo.setEstatus(EstatusPeriodo.VIGENTE);
         periodo.setCreatedAt(java.time.LocalDateTime.now());
         periodo.setPeriodoNumero((int) aniosCompletos);
         periodo.setAnioGestion(inicioAnio.getYear());
 
         periodoRepository.save(periodo);
 
-        log.info("Período generado para empleado {} - Año {} - {} días",
-                empleado.getId(), aniosCompletos, diasCorresponden);
+        log.info("Período generado para empleado {} - Año {} - {} días", empleado.getId(), aniosCompletos, diasCorresponden);
     }
 
     private int calcularDiasSegunAntiguedad(int anios, PoliticaVacacionEntity politica) {
@@ -92,8 +90,7 @@ public class PeriodoVacacionalSyncService {
             return politica.getDiasPrimerAnio() + (politica.getIncrementoAnual() * (anios - 1));
         }
 
-        int diasBase = politica.getDiasPrimerAnio() +
-                (politica.getIncrementoAnual() * (politica.getAniosIncrementoHasta() - 1));
+        int diasBase = politica.getDiasPrimerAnio() + (politica.getIncrementoAnual() * (politica.getAniosIncrementoHasta() - 1));
 
         int aniosExtra = anios - politica.getAniosIncrementoHasta();
         int bloquesExtra = aniosExtra / politica.getAniosBloquePostLimite();
@@ -115,20 +112,17 @@ public class PeriodoVacacionalSyncService {
                 .orElseThrow(() -> EmpleadoException.notFound(Long.valueOf(empleadoId)));
 
         List<PeriodoVacacionalEntity> periodosExistentes = periodoRepository.findByEmpleadoId(empleadoId);
-        periodosExistentes.stream()
-                .filter(p -> p.getDiasTomados() == 0)
-                .forEach(periodoRepository::delete);
+        periodosExistentes.stream().filter(p -> p.getDiasTomados() == 0).forEach(periodoRepository::delete);
 
-        log.info("Períodos eliminados para empleado {}: {}", empleadoId,
-                periodosExistentes.stream().filter(p -> p.getDiasTomados() == 0).count());
+        log.info("Períodos eliminados para empleado {}: {}", empleadoId, periodosExistentes.stream()
+                .filter(p -> p.getDiasTomados() == 0)
+                .count());
 
         generarPeriodoActualConPoliticaCorrecta(empleado);
     }
 
     private void generarPeriodoActualConPoliticaCorrecta(EmpleadoEntity empleado) {
-        LocalDate fechaBase = empleado.getFechaReingreso() != null
-                ? empleado.getFechaReingreso()
-                : empleado.getFechaAlta();
+        LocalDate fechaBase = empleado.getFechaReingreso() != null ? empleado.getFechaReingreso() : empleado.getFechaAlta();
 
         LocalDate hoy = LocalDate.now();
         long aniosCompletos = ChronoUnit.YEARS.between(fechaBase, hoy);
@@ -144,14 +138,11 @@ public class PeriodoVacacionalSyncService {
         if (!periodoRepository.existsByEmpleadoIdAndAnioLaboral(empleado.getId(), anioPeriodoDisponible)) {
             LocalDate fechaAniversario = fechaBase.plusYears(anioPeriodoDisponible - 1);
 
-            PoliticaVacacionEscalaEntity politicaEscala = politicaEscalaRepository
-                    .findPoliticaVigenteParaFecha(fechaAniversario)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "No existe política para aniversario: " + fechaAniversario));
+            PoliticaVacacionEscalaEntity politicaEscala = politicaEscalaRepository.findPoliticaVigenteParaFecha(fechaAniversario)
+                    .orElseThrow(() -> new IllegalStateException("No existe política para aniversario: " + fechaAniversario));
 
             generarPeriodoParaAnioConEscala(empleado, politicaEscala, anioPeriodoDisponible, fechaBase);
-            log.info("Período generado con política '{}': empleado={}, año={}, aniversario={}",
-                    politicaEscala.getNombre(), empleado.getId(), anioPeriodoDisponible, fechaAniversario);
+            log.info("Período generado con política '{}': empleado={}, año={}, aniversario={}", politicaEscala.getNombre(), empleado.getId(), anioPeriodoDisponible, fechaAniversario);
         }
     }
 
@@ -164,7 +155,7 @@ public class PeriodoVacacionalSyncService {
         LocalDate finAnio = fechaBase.plusYears(1).minusDays(1);
 
         PeriodoVacacionalEntity periodo = new PeriodoVacacionalEntity();
-        periodo.setEmpleadoId(empleado.getId());
+        periodo.setEmpleado(new EmpleadoEntity(empleado.getId()));
         periodo.setAnioLaboral(anioLaboral);
         periodo.setFechaInicio(fechaBase);
         periodo.setFechaFin(finAnio);
@@ -172,20 +163,17 @@ public class PeriodoVacacionalSyncService {
         periodo.setDiasTomados(0);
         periodo.setDiasRestantes(0);
         periodo.setFechaCaducidad(finAnio);
-        periodo.setEstatus(PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE);
+        periodo.setEstatus(EstatusPeriodo.VIGENTE);
         periodo.setCreatedAt(java.time.LocalDateTime.now());
         periodo.setPeriodoNumero(0);
         periodo.setAnioGestion(fechaBase.getYear());
 
         periodoRepository.save(periodo);
-        log.info("Período sin antigüedad creado: empleado={}, ingreso={}, primerAniversario={}",
-                empleado.getId(), fechaBase, finAnio.plusDays(1));
+        log.info("Período sin antigüedad creado: empleado={}, ingreso={}, primerAniversario={}", empleado.getId(), fechaBase, finAnio.plusDays(1));
     }
 
 
-    private void generarPeriodoParaAnioConEscala(EmpleadoEntity empleado,
-                                                 PoliticaVacacionEscalaEntity politica,
-                                                 int anio, LocalDate fechaBase) {
+    private void generarPeriodoParaAnioConEscala(EmpleadoEntity empleado, PoliticaVacacionEscalaEntity politica, int anio, LocalDate fechaBase) {
         int diasCorresponden = politica.getDiasVacacionesPorAnio(anio);
         LocalDate inicioAnio = fechaBase.plusYears(anio - 1);
         LocalDate finAnio = inicioAnio.plusYears(1).minusDays(1);
@@ -201,12 +189,10 @@ public class PeriodoVacacionalSyncService {
         LocalDate caducidad = aniversarioQueGeneraDias.plusMonths(12);
 
         LocalDate hoy = LocalDate.now();
-        PeriodoVacacionalEntity.EstatusPeriodo estatus = hoy.isAfter(caducidad)
-                ? PeriodoVacacionalEntity.EstatusPeriodo.VENCIDO
-                : PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE;
+        EstatusPeriodo estatus = hoy.isAfter(caducidad) ? EstatusPeriodo.VENCIDO : EstatusPeriodo.VIGENTE;
 
         PeriodoVacacionalEntity periodo = new PeriodoVacacionalEntity();
-        periodo.setEmpleadoId(empleado.getId());
+        periodo.setEmpleado(new EmpleadoEntity(empleado.getId()));
         periodo.setAnioLaboral(anio);
         periodo.setFechaInicio(inicioAnio);
         periodo.setFechaFin(finAnio);
@@ -221,15 +207,12 @@ public class PeriodoVacacionalSyncService {
 
         periodoRepository.save(periodo);
 
-        log.info("Período creado: empleado={}, año={}, días={}, aniversario={}, caducidad={}, política='{}'",
-                empleado.getId(), anio, diasCorresponden, aniversarioQueGeneraDias, caducidad, politica.getNombre());
+        log.info("Período creado: empleado={}, año={}, días={}, aniversario={}, caducidad={}, política='{}'", empleado.getId(), anio, diasCorresponden, aniversarioQueGeneraDias, caducidad, politica.getNombre());
     }
 
     @Transactional
     public void generarPeriodoActual(EmpleadoEntity empleado, PoliticaVacacionEntity politica) {
-        LocalDate fechaBase = empleado.getFechaReingreso() != null
-                ? empleado.getFechaReingreso()
-                : empleado.getFechaAlta();
+        LocalDate fechaBase = empleado.getFechaReingreso() != null ? empleado.getFechaReingreso() : empleado.getFechaAlta();
 
         LocalDate hoy = LocalDate.now();
         long aniosCompletos = ChronoUnit.YEARS.between(fechaBase, hoy);
@@ -260,8 +243,7 @@ public class PeriodoVacacionalSyncService {
         }
     }
 
-    private void generarPeriodoParaAnio(EmpleadoEntity empleado, PoliticaVacacionEntity politica,
-                                        int anio, LocalDate fechaBase) {
+    private void generarPeriodoParaAnio(EmpleadoEntity empleado, PoliticaVacacionEntity politica, int anio, LocalDate fechaBase) {
         int diasCorresponden = calcularDiasSegunAntiguedad(anio, politica);
         LocalDate inicioAnio = fechaBase.plusYears(anio - 1);
         LocalDate finAnio = inicioAnio.plusYears(1).minusDays(1);
@@ -269,18 +251,18 @@ public class PeriodoVacacionalSyncService {
 
         // Determinar estatus: VIGENTE si estamos dentro del año laboral
         LocalDate hoy = LocalDate.now();
-        PeriodoVacacionalEntity.EstatusPeriodo estatus;
+        EstatusPeriodo estatus;
 
         if (hoy.isAfter(finAnio)) {
-            estatus = PeriodoVacacionalEntity.EstatusPeriodo.VENCIDO;
+            estatus = EstatusPeriodo.VENCIDO;
         } else if (hoy.isBefore(inicioAnio)) {
-            estatus = PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE; // Futuro
+            estatus = EstatusPeriodo.VIGENTE; // Futuro
         } else {
-            estatus = PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE; // En curso
+            estatus = EstatusPeriodo.VIGENTE; // En curso
         }
 
         PeriodoVacacionalEntity periodo = new PeriodoVacacionalEntity();
-        periodo.setEmpleadoId(empleado.getId());
+        periodo.setEmpleado(new EmpleadoEntity(empleado.getId()));
         periodo.setAnioLaboral(anio);
         periodo.setFechaInicio(inicioAnio);
         periodo.setFechaFin(finAnio);
@@ -295,7 +277,6 @@ public class PeriodoVacacionalSyncService {
 
         periodoRepository.save(periodo);
 
-        log.info("Período generado: empleado={}, año={}, días={}, inicio={}, fin={}, estatus={}",
-                empleado.getId(), anio, diasCorresponden, inicioAnio, finAnio, estatus);
+        log.info("Período generado: empleado={}, año={}, días={}, inicio={}, fin={}, estatus={}", empleado.getId(), anio, diasCorresponden, inicioAnio, finAnio, estatus);
     }
 }

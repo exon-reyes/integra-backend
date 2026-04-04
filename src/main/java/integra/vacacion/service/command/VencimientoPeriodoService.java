@@ -1,5 +1,6 @@
 package integra.vacacion.service.command;
 
+import integra.vacacion.core.EstatusPeriodo;
 import integra.vacacion.entity.PeriodoVacacionalEntity;
 import integra.vacacion.repository.PeriodoVacacionalRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +31,12 @@ public class VencimientoPeriodoService {
         for (PeriodoVacacionalEntity periodo : periodosVencidos) {
             if (periodo.getDiasRestantes() > 0) {
                 log.warn("Venciendo período: empleado={}, año={}, días perdidos={}",
-                        periodo.getEmpleadoId(),
+                        periodo.getEmpleado().getId(),
                         periodo.getAnioLaboral(),
                         periodo.getDiasRestantes());
             }
 
-            periodo.setEstatus(PeriodoVacacionalEntity.EstatusPeriodo.VENCIDO);
+            periodo.setEstatus(EstatusPeriodo.VENCIDO);
             periodoRepository.save(periodo);
             vencidos++;
         }

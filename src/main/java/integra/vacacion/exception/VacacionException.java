@@ -113,4 +113,20 @@ public class VacacionException extends BusinessException {
     public static VacacionException descansosNoConfigurados() {
         return new VacacionException(ErrorCode.VAC_DESCANSOS_NO_CONFIGURADOS, "Debe configurar sus días de descanso antes de solicitar vacaciones");
     }
+
+    /**
+     * El empleado no puede cancelar la solicitud porque RRHH (nivel 2) ya la aprobó.
+     */
+    public static VacacionException cancelacionBloqueadaPorRrhh() {
+        return new VacacionException(ErrorCode.VAC_ESTADO_INVALIDO,
+                "Tu solicitud ya fue aprobada por Recursos Humanos. Para cancelarla, contacta directamente a RRHH.");
+    }
+
+    /**
+     * El empleado no puede cancelar la solicitud porque su jefe directo (nivel 1) ya la aprobó.
+     */
+    public static VacacionException cancelacionBloqueadaPorJefe() {
+        return new VacacionException(ErrorCode.VAC_ESTADO_INVALIDO,
+                "Tu solicitud ya fue aprobada por un jefe. Para cancelarla, solicita a tu jefe/rrhh que la rechace primero.");
+    }
 }

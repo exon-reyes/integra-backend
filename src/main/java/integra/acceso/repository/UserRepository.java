@@ -103,4 +103,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """, nativeQuery = true)
     List<PermissionProjection> findAllPermissionsRaw(@Param("idUsuario") Long idUsuario);
 
+    @Query(value = """
+            SELECT COUNT(*) > 0
+            FROM users u
+            WHERE u.empleado_id = :empleadoId AND u.activo = 1
+              AND (
+                  EXISTS (SELECT 1 FROM user_roles ur
+                          INNER JOIN role_permissions rp ON ur.role_id = rp.role_id
+                          WHERE ur.user_id = u.id AND rp.permission_id = :permisoId)
+                  OR
+                  EXISTS (SELECT 1 FROM user_permissions up
+                          WHERE up.user_id = u.id AND up.permission_id = :permisoId)
+              )
+            """, nativeQuery = true)
+    int tienePermiso(@Param("empleadoId") Integer empleadoId, @Param("permisoId") String permisoId);
+
 }

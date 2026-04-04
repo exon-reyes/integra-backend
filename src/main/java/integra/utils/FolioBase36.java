@@ -5,7 +5,6 @@ import java.util.Random;
 
 public final class FolioBase36 {
     private static final Random random = new Random();
-
     // Generar una letra aleatoria entre A y Z
     private static char generarLetraAleatoria() {
         return (char) (random.nextInt(26) + 'A');

@@ -1,5 +1,6 @@
 package integra.vacacion.entity;
 
+import integra.empleado.entity.EmpleadoEntity;
 import integra.vacacion.domain.model.EstatusSolicitud;
 import integra.vacacion.domain.model.TipoSolicitud;
 import jakarta.persistence.*;
@@ -18,7 +19,8 @@ import java.time.LocalDateTime;
 @Table(name = "empleado_tiempo", schema = "integra", indexes = {@Index(name = "idx_empleado", columnList = "empleado_id"),
         @Index(name = "idx_fecha", columnList = "fecha"),
         @Index(name = "idx_tipo", columnList = "tipo"),
-        @Index(name = "idx_estatus", columnList = "estatus")}, uniqueConstraints = {@UniqueConstraint(name = "uk_empleado_fecha_tipo", columnNames = {
+        @Index(name = "idx_estatus", columnList = "estatus"),
+        @Index(name = "idx_folio", columnList = "folio")}, uniqueConstraints = {@UniqueConstraint(name = "uk_empleado_fecha_tipo", columnNames = {
         "empleado_id",
         "fecha",
         "tipo"})})
@@ -28,9 +30,10 @@ public class EmpleadoTiempoEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @NotNull
-    @Column(name = "empleado_id", nullable = false)
-    private Integer empleadoId;
+//    @NotNull
+//    @Column(name = "empleado_id", nullable = false)
+//    private Integer empleadoId;
+
 
     @NotNull
     @Column(name = "fecha", nullable = false)
@@ -50,8 +53,6 @@ public class EmpleadoTiempoEntity {
     @Column(name = "estatus", nullable = false, length = 20)
     private EstatusSolicitud estatus = EstatusSolicitud.PENDIENTE;
 
-    @Column(name = "aprobador_id")
-    private Integer aprobadorId;
 
     @Column(name = "fecha_aprobacion")
     private LocalDateTime fechaAprobacion;
@@ -60,8 +61,6 @@ public class EmpleadoTiempoEntity {
     @Column(name = "comentarios_aprobador")
     private String comentariosAprobador;
 
-    @Column(name = "periodo_id")
-    private Long periodoId;
 
     @ColumnDefault("1")
     @Column(name = "activo")
@@ -69,11 +68,30 @@ public class EmpleadoTiempoEntity {
 
     @ColumnDefault("current_timestamp()")
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empleado_id", nullable = false)
+    private EmpleadoEntity empleado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "periodo_id")
+    private PeriodoVacacionalEntity periodo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estatus_jefe", nullable = false, length = 20)
+    private EstatusSolicitud estatusJefe;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estatus_rrhh", nullable = false, length = 20)
+    private EstatusSolicitud estatusRrhh;
+
+    @Column(name = "folio")
+    private Long folio;
+
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAt = LocalDate.now();
     }
 
 }

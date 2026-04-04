@@ -39,9 +39,9 @@ public class ConsultarCatalogoEmpleados {
         if (dataDepartamento != null) {
             empleado.setDepartamento(new Departamento(dataDepartamento.getId(), dataDepartamento.getNombre()));
         }
-        data.getVinculacionGestions()
-                .forEach(gestor -> empleado.setGestor(new Gestor(gestor.getId(), gestor.getGestor()
-                        .getNombreCompleto(), gestor.getNivelAutoridad(), gestor.getTipoProceso().getDescripcion())));
+        empleado.setPrimerJefe(new Gestor(data.getJefe().getId(), data.getJefe().getNombreCompleto(), 1));
+        empleado.setSegundoJefe(new Gestor(data.getSegundoJefe().getId(), data.getSegundoJefe()
+                .getNombreCompleto(), 2));
         return empleado;
     }
 
@@ -49,11 +49,11 @@ public class ConsultarCatalogoEmpleados {
         return filtroEmpleadoService.obtenerConFiltro(filtros).stream().map(this::mapToEmpleado).toList();
     }
 
-    public Empleado obtenerEmpleado(Integer id) {
-        return empleadoRepository.findById(id, InfoCatalogoEmpleados.class)
-                .map(this::mapToEmpleado)
-                .orElseThrow(() -> EmpleadoException.notFound(Long.valueOf(id)));
-    }
+//    public Empleado obtenerEmpleado(Integer id) {
+//        return empleadoRepository.findById(id, InfoCatalogoEmpleados.class)
+//                .map(this::mapToEmpleado)
+//                .orElseThrow(() -> EmpleadoException.notFound(Long.valueOf(id)));
+//    }
 
     public List<Empleado> obtenerSupervisores(Boolean activos) {
         FiltroEmpleado filtro = new FiltroEmpleado();

@@ -1,5 +1,6 @@
 package integra.model;
 
+import integra.vacacion.dto.response.PeriodoVacacional;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +29,9 @@ public class Empleado {
     private String sexo;
     private List<Gestor> gestores;
     private Integer antiguedadAnios;
+    private Gestor primerJefe;
+    private Gestor segundoJefe;
+    private PeriodoVacacional periodoVacacional;
 
     public Empleado(Integer id) {
         this.id = id;

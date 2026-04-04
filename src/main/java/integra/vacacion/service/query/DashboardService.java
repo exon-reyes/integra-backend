@@ -1,15 +1,20 @@
 package integra.vacacion.service.query;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import integra.empleado.exception.EmpleadoException;
 import integra.empleado.query.EmpleadoVacacionInfo;
 import integra.empleado.service.ConsultarEmpleadoService;
 import integra.model.Empleado;
+import integra.vacacion.core.EstatusPeriodo;
 import integra.vacacion.domain.model.*;
 import integra.vacacion.dto.response.PeriodoVacacional;
 import integra.vacacion.entity.PeriodoVacacionalEntity;
 import integra.vacacion.exception.VacacionException;
+import integra.vacacion.repository.DashboardGestionRepository;
 import integra.vacacion.repository.PeriodoVacacionalRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +53,7 @@ public class DashboardService {
         // =============================
         // PERIODO
         // =============================
-        PeriodoVacacionalEntity periodoEntity = periodoVacacionalRepository.findPeriodoVacacionalEntityByEmpleadoIdAndEstatus(empleadoId, PeriodoVacacionalEntity.EstatusPeriodo.VIGENTE)
+        PeriodoVacacionalEntity periodoEntity = periodoVacacionalRepository.findPeriodoVacacionalEntityByEmpleadoIdAndEstatus(empleadoId, EstatusPeriodo.VIGENTE)
                 .orElseThrow(VacacionException::sinPeriodoActivo);
 
         PeriodoVacacional periodo = new PeriodoVacacional();
@@ -75,14 +80,18 @@ public class DashboardService {
         List<SolicitudEmpleado> vacAprobadas = vac.getOrDefault(EstatusSolicitud.APROBADA, List.of());
         List<SolicitudEmpleado> vacCanceladas = vac.getOrDefault(EstatusSolicitud.CANCELADA, List.of());
 
+        Map<Boolean, List<SolicitudEmpleado>> particionAprobadas = vacAprobadas.stream()
+                .collect(Collectors.partitioningBy(s -> s.getFecha().isBefore(hoy)));
+        List<SolicitudEmpleado> disfrutadas = particionAprobadas.getOrDefault(true, List.of());
+        List<SolicitudEmpleado> aprobadas = particionAprobadas.getOrDefault(false, List.of());
+
         SolicitudesVacaciones vacaciones = new SolicitudesVacaciones();
         vacaciones.setPendientes(vacPendientes);
-        vacaciones.setAprobadas(vacAprobadas);
-        // Dejar disfrutadas y aprobadasPorTomar vacías ya que ahora solo hay un estatus general
+        vacaciones.setAprobadas(aprobadas);
+        vacaciones.setDisfrutadas(disfrutadas);
         vacaciones.setCanceladas(vacCanceladas);
 
-        // Se asigna vacAprobadas.size() a sumaAprobadasPorTomar para mantener la UI
-        vacaciones.setIndicadores(0, vacAprobadas.size(), vacPendientes.size(), vacCanceladas.size());
+        vacaciones.setIndicadores(disfrutadas.size(), aprobadas.size(), vacPendientes.size(), vacCanceladas.size());
 
         // =============================
         // DESCANSOS
@@ -93,7 +102,6 @@ public class DashboardService {
         List<SolicitudEmpleado> desCanceladas = des.getOrDefault(EstatusSolicitud.CANCELADA, List.of());
 
         SolicitudesDescanso descansos = new SolicitudesDescanso(desPendientes, desAprobadas, desCanceladas);
-
         descansos.setIndicadores(desPendientes.size(), desAprobadas.size(), desCanceladas.size());
 
         return DashboardSolicitudTiempo.builder()
@@ -104,4 +112,6 @@ public class DashboardService {
                 .descansos(descansos)
                 .build();
     }
+
+
 }

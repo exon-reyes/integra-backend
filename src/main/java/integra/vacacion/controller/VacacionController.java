@@ -4,9 +4,12 @@ import integra.utils.ResponseData;
 import integra.vacacion.domain.model.DashboardSolicitudTiempo;
 import integra.vacacion.domain.model.TipoSolicitud;
 import integra.vacacion.dto.request.SolicitudVacacionRequest;
+import integra.vacacion.dto.response.DashboardGestionSolicitudResponse;
 import integra.vacacion.dto.response.EmpleadoTiempoHistorialDTO;
-import integra.vacacion.service.command.VacacionTiempoCommandService;
+import integra.vacacion.dto.response.GestionSolicitudResponse;
+import integra.vacacion.service.command.SolicitudCommandService;
 import integra.vacacion.service.query.DashboardService;
+import integra.vacacion.service.query.GestionSolicitudQueryService;
 import integra.vacacion.service.query.VacacionHistorialQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +24,9 @@ import java.util.List;
 public class VacacionController {
 
     private final DashboardService dashboardService;
-    private final VacacionTiempoCommandService vacacionCommandService;
+    private final SolicitudCommandService vacacionCommandService;
     private final VacacionHistorialQueryService historialQueryService;
+    private final GestionSolicitudQueryService gestionSolicitudQueryService;
 
     @GetMapping("dashboard")
     public ResponseEntity<ResponseData<DashboardSolicitudTiempo>> getDashboard(@RequestParam Integer empleadoId) {
@@ -60,5 +64,21 @@ public class VacacionController {
     public ResponseEntity<ResponseData<Void>> reactivar(@PathVariable Long id, @RequestParam Integer usuarioId) {
         vacacionCommandService.reactivar(id,usuarioId);
         return ResponseEntity.ok(ResponseData.of(true, "Solicitud creada exitosamente"));
+    }
+
+    /**
+     * Dashboard de gestión de vacaciones para gestores.
+     * Devuelve todos los empleados con periodo VIGENTE, sus gestores nivel 1 y 2,
+     * y sus solicitudes de tiempo agregadas.
+     *
+     * @return lista de empleados con su información consolidada.
+     */
+    @GetMapping("gestion/dashboard")
+    public ResponseEntity<ResponseData<List<GestionSolicitudResponse>>> obtenerDashboardGestionVigente() {
+        return ResponseEntity.ok(ResponseData.of(gestionSolicitudQueryService.obtenerSolicitudesVigentes(), "Solicitudes vigentes"));
+    }
+    @GetMapping("gestion/dashboard/indicadores")
+    public ResponseEntity<ResponseData<DashboardGestionSolicitudResponse>> obtenerDashboardGestion() {
+        return ResponseEntity.ok(ResponseData.of(gestionSolicitudQueryService.obtenerDashboardGestion(), "Indicadores"));
     }
 }
