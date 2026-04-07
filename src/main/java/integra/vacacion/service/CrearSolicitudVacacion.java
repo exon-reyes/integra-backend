@@ -61,7 +61,7 @@ public class CrearSolicitudVacacion {
         // Crear Entidad Solicitud (Padre)
         SolicitudDescanso entity = new SolicitudDescanso();
         entity.setEmpleado(empleadoRepository.getReferenceById(solicitud.usuarioId()));
-        entity.setFolioSolicitud(FolioGenerator.generarFolioDia(solicitud.usuarioId(), 1));
+        entity.setFolioSolicitud(FolioGenerator.generarFolioNumericoUnico());
         entity.setTipoSolicitud(TipoSolicitud.VACACION);
         entity.setFechaCreacion(LocalDate.now());
         entity.setDiasSolicitados(fechasValidas.size());
