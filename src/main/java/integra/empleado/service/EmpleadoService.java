@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class ConsultarEmpleadoService {
+public class EmpleadoService {
 
     private final EmpleadoRepository empleadoRepository;
 

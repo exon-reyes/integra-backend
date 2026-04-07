@@ -24,7 +24,17 @@ public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacaci
     List<PeriodoVacacionalEntity> findPeriodosVencidos(@Param("fecha") LocalDate fecha);
 
 
-    Optional<PeriodoVacacionalEntity> findPeriodoVacacionalEntityByEmpleadoIdAndEstatus(Integer empleadoId, EstatusPeriodo estatus);
+    @Query("select p from PeriodoVacacionalEntity p where p.empleado.id = ?1 and p.estatus = ?2")
+    Optional<PeriodoVacacionalEntity> obtenerPeriodo(Integer empleadoId, EstatusPeriodo estatus);
+
+    @Query(value = """
+            SELECT p.* FROM periodos_vacacionales p
+            WHERE p.empleado_id = :empleadoId
+            ORDER BY FIELD(p.estatus, 'VIGENTE', 'CONSUMIDO', 'VENCIDO'), p.fecha_fin DESC
+            LIMIT 1
+            """, nativeQuery = true)
+    Optional<PeriodoVacacionalEntity> obtenerMejorPeriodo(@Param("empleadoId") Integer empleadoId);
+
 
     @Transactional
     @Modifying

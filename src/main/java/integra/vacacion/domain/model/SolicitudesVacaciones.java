@@ -1,5 +1,6 @@
 package integra.vacacion.domain.model;
 
+import integra.vacacion.dto.response.FechaSolicitud;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,10 +9,10 @@ import java.util.List;
 @Getter
 @Setter
 public class SolicitudesVacaciones {
-    private List<SolicitudEmpleado> pendientes;
-    private List<SolicitudEmpleado> aprobadas;
-    private List<SolicitudEmpleado> canceladas;
-    private List<SolicitudEmpleado> disfrutadas;
+    private List<FechaSolicitud> pendientes;
+    private List<FechaSolicitud> aprobadas;
+    private List<FechaSolicitud> canceladas;
+    private List<FechaSolicitud> disfrutadas;
 
     private int sumaPendientesAprobacion;
     private int sumaAprobadas;

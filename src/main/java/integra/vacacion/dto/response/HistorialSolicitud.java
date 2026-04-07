@@ -2,7 +2,7 @@ package integra.vacacion.dto.response;
 
 import java.time.LocalDateTime;
 
-public record EmpleadoTiempoHistorialDTO(
+public record HistorialSolicitud(
         Long id,
         Long empleadoTiempoId,
         String tipoEvento,

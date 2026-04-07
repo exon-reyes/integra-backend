@@ -18,7 +18,10 @@ public class VacacionException extends BusinessException {
     public VacacionException(ErrorCode errorCode, String message, String field, Object rejectedValue) {
         super(errorCode, message, field, rejectedValue);
     }
+    public static VacacionException folioNoEncontrado(Long folio){
+        return new VacacionException(ErrorCode.VAC_FOLIO_NO_ENCONTRADO, String.format("Folio %s no encontrado", folio));
 
+    }
     public static VacacionException antiguedadInsuficiente() {
         return new VacacionException(ErrorCode.VAC_ANTIGUEDAD_INSUFICIENTE, "El empleado no cumple con el año mínimo de antigüedad requerido");
     }

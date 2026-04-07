@@ -10,11 +10,13 @@ import java.util.List;
 
 @Data
 public class DetalleSolicitudDTO {
+    private Long id;
     private Empleado empleado;
     private int diasHabilitados;
     private int anioGestion;
     private int diasSolicitados;
     private int diasTomados;
+    private LocalDate fechaCreacion;
     private int restanteSiAprueba;
     private EstatusSolicitud estatusPrimerResponsable;
     private EstatusSolicitud estatusSegundoResponsable;

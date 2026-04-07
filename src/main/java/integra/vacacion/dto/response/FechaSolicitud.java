@@ -11,6 +11,18 @@ public final class FechaSolicitud {
     private  String estatus;
     private String estatusPrimerJefe;
     private String estatusSegundoJefe;
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public FechaSolicitud(Long id, LocalDate fecha, String estatusPrimerJefe, String estatusSegundoJefe) {
+        this.id = id;
+        this.fecha = fecha;
+        this.estatusPrimerJefe = estatusPrimerJefe;
+        this.estatusSegundoJefe = estatusSegundoJefe;
+    }
+
     private String comentario;
 
     public FechaSolicitud(Long id, LocalDate fecha, String estatus) {

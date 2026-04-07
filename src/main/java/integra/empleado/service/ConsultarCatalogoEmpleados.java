@@ -45,7 +45,7 @@ public class ConsultarCatalogoEmpleados {
         return empleado;
     }
 
-    public List<Empleado> consultarConFiltro(FiltroEmpleado filtros) {
+    public List<Empleado> consultar(FiltroEmpleado filtros) {
         return filtroEmpleadoService.obtenerConFiltro(filtros).stream().map(this::mapToEmpleado).toList();
     }
 
@@ -59,7 +59,7 @@ public class ConsultarCatalogoEmpleados {
         FiltroEmpleado filtro = new FiltroEmpleado();
         filtro.setIdPuesto(systemIdProvider.getIdPuestoSupervisor());
         filtro.setActivos(activos);
-        return consultarConFiltro(filtro);
+        return consultar(filtro);
     }
 
     private Empleado mapToEmpleado(InfoCatalogoEmpleados data) {

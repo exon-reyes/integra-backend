@@ -1,10 +1,7 @@
 package integra.vacacion.service.validation;
 
 import integra.model.Empleado;
-import integra.vacacion.domain.model.DashboardSolicitudTiempo;
-import integra.vacacion.domain.model.SolicitudEmpleado;
-import integra.vacacion.domain.model.SolicitudesDescanso;
-import integra.vacacion.domain.model.SolicitudesVacaciones;
+import integra.vacacion.domain.model.*;
 import integra.vacacion.dto.response.Festivo;
 import integra.vacacion.exception.VacacionException;
 import org.springframework.stereotype.Service;
@@ -14,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import integra.vacacion.dto.response.FechaSolicitud;
 
 @Service
 public class SolicitudValidatorService {
@@ -30,7 +28,7 @@ public class SolicitudValidatorService {
     }
 
     public Set<LocalDate> filtrarCruceSolicitudVacaciones(Set<LocalDate> fechasSolicitadas,
-                                                          DashboardSolicitudTiempo dashboard,
+                                                          DashboardSolicitudes dashboard,
                                                           List<Festivo> festivos) {
 
         if (fechasSolicitadas == null || fechasSolicitadas.isEmpty()) {
@@ -55,7 +53,7 @@ public class SolicitudValidatorService {
         return resultado;
     }
 
-    private Set<LocalDate> obtenerFechasExcluidas(DashboardSolicitudTiempo dashboard,
+    private Set<LocalDate> obtenerFechasExcluidas(DashboardSolicitudes dashboard,
                                                   List<Festivo> festivos) {
 
         int capacity = 32;
@@ -99,17 +97,21 @@ public class SolicitudValidatorService {
         return excluidas;
     }
 
-    private void extraerFechas(List<SolicitudEmpleado> solicitudes, Set<LocalDate> destino) {
+    private void extraerFechas(List<?> solicitudes, Set<LocalDate> destino) {
         if (solicitudes == null || solicitudes.isEmpty()) {
             return;
         }
 
-
-        for (int i = 0, size = solicitudes.size(); i < size; i++) {
-            LocalDate fecha = solicitudes.get(i).getFecha();
+        for (Object obj : solicitudes) {
+            LocalDate fecha = null;
+            if (obj instanceof SolicitudEmpleado s) {
+                fecha = s.getFecha();
+            } else if (obj instanceof FechaSolicitud f) {
+                fecha = f.getFecha();
+            }
             if (fecha != null) {
                 destino.add(fecha);
             }
         }
     }
-}
+}

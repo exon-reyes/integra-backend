@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @Builder
-public class DashboardSolicitudTiempo {
+public class DashboardSolicitudes {
     private Empleado empleado;
     private PeriodoVacacional periodoVacacional;
     private SolicitudesDescanso descansos;

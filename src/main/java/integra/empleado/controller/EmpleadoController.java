@@ -24,7 +24,7 @@ class EmpleadoController {
 
     @GetMapping()
     public ResponseEntity<ResponseData<List<Empleado>>> obtenerEmpleados(FiltroEmpleado filtro) {
-        return ResponseEntity.ok(ResponseData.of(catalagoEmpleados.consultarConFiltro(filtro), "Empleado"));
+        return ResponseEntity.ok(ResponseData.of(catalagoEmpleados.consultar(filtro), "Empleado"));
     }
 
     @GetMapping("supervisores")
