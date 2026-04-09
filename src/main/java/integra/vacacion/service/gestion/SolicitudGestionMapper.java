@@ -24,7 +24,6 @@ public final class SolicitudGestionMapper {
         dto.setEstatusRrhh(r.estatusNivel2() != null ? r.estatusNivel2().name() : null);
         dto.setDiasTotalSolicitud(r.diasSolicitados() != null ? r.diasSolicitados() : 0);
         dto.setDiasAprobados(calcularAprobados(dias));
-
         if (r.empleadoId() != null) {
             dto.setColaborador(new Empleado(r.empleadoId(), r.empleadoCodigo(), r.empleadoNombre()));
             dto.setUnidad(r.unidadNombre());

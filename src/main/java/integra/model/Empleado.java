@@ -31,6 +31,7 @@ public class Empleado {
     private Integer antiguedadAnios;
     private Gestor primerJefe;
     private Gestor segundoJefe;
+    private LocalDate fechaIngreso;
     private PeriodoVacacional periodoVacacional;
 
     public Empleado(Integer id) {
@@ -59,6 +60,8 @@ public class Empleado {
         this.apellidoPaterno = apellidoPaterno;
         this.apellidoMaterno = apellidoMaterno;
     }
+
+
 
     public void setNombre(String nombre, String apellidoPaterno, String apellidoMaterno) {
         this.nombre = nombre;

@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.Set;
 
-public record SolicitudVacacionRequest(
-        @NotEmpty(message = "Debe especificar al menos una fecha de vacaciones") Set<LocalDate> diasSeleccionados,
+public record SolicitudDescansoRequest(
+        @NotEmpty(message = "Debe especificar al menos una fecha en la solicitud") Set<LocalDate> diasSeleccionados,
         Integer usuarioId,
         String motivo, TipoSolicitud tipoSolicitud) {
 }

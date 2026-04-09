@@ -97,23 +97,37 @@ public class ObtenerSolicitudes {
         List<Predicate> predicates = new ArrayList<>();
         if (filtro == null) return predicates;
 
-        // Estatus
         if (filtro.getEstatus() != null && !filtro.getEstatus().isBlank()) {
             try {
                 predicates.add(cb.equal(root.get("estatus"), EstatusSolicitud.valueOf(filtro.getEstatus())));
-            } catch (IllegalArgumentException e) {
-                // Loguear o manejar estatus inválido enviado desde el cliente
+            } catch (IllegalArgumentException ignored) {
             }
         }
 
-        // Filtros que requieren Join con Empleado
-        if (filtro.getJefeId() != null || filtro.getRrhhId() != null) {
-            Join<Object, Object> emp = root.join("empleado"); // Reutilizamos o creamos join
-            if (filtro.getJefeId() != null) {
-                predicates.add(cb.equal(emp.get("jefe").get("id"), filtro.getJefeId()));
+        boolean needsEmpJoin = filtro.getResponsableId() != null
+                || filtro.getRrhhId() != null
+                || filtro.getSupervisorId() != null
+                || filtro.getUnidadId() != null
+                || filtro.getEmpleadoId() != null;
+
+        if (needsEmpJoin) {
+            Join<SolicitudDescanso, EmpleadoEntity> emp = root.join("empleado");
+
+            if (filtro.getEmpleadoId() != null) {
+                predicates.add(cb.equal(emp.get("id"), filtro.getEmpleadoId()));
+            }
+            if (filtro.getResponsableId() != null) {
+                predicates.add(cb.equal(emp.get("jefe").get("id"), filtro.getResponsableId()));
             }
             if (filtro.getRrhhId() != null) {
                 predicates.add(cb.equal(emp.get("segundoJefe").get("id"), filtro.getRrhhId()));
+            }
+            if (filtro.getUnidadId() != null) {
+                predicates.add(cb.equal(emp.get("unidad").get("id"), filtro.getUnidadId()));
+            }
+            if (filtro.getSupervisorId() != null) {
+                Join<EmpleadoEntity, UnidadEntity> unidad = emp.join("unidad", JoinType.INNER);
+                predicates.add(cb.equal(unidad.get("supervisor").get("id"), filtro.getSupervisorId()));
             }
         }
 

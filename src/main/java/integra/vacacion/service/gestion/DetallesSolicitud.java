@@ -37,7 +37,12 @@ public class DetallesSolicitud {
         result.setId(data.getId());
         result.setFechaCreacion(data.getFechaCreacion());
         Empleado empleado = new Empleado(dataEmpleado.getId(), dataEmpleado.getNombreCompleto());
-        empleado.setUnidad(new Unidad(dataUnidad.getId(), dataUnidad.getNombreCompleto()));
+        empleado.setUnidad(new integra.model.Unidad(dataUnidad.getId(), dataUnidad.getNombreCompleto()));
+        empleado.setCodigo(dataEmpleado.getCodigoEmpleado());
+        empleado.setFechaAlta(dataEmpleado.getFechaAlta());
+        if (dataEmpleado.getPuesto() != null) {
+            empleado.setPuesto(new integra.model.Puesto(dataEmpleado.getPuesto().getId(), dataEmpleado.getPuesto().getNombre()));
+        }
 
         result.setEstatusGlobal(data.getEstatus());
         result.setTipoSolicitud(data.getTipoSolicitud());
@@ -54,10 +59,18 @@ public class DetallesSolicitud {
         result.setAnioGestion(periodo.getAnioGestion());
 
         if (dataResponsableNivel1 != null) {
-            result.setPrimerJefe(new Empleado(dataResponsableNivel1.getId(), dataResponsableNivel1.getNombreCompleto()));
+            Empleado pj = new Empleado(dataResponsableNivel1.getId(), dataResponsableNivel1.getNombreCompleto());
+            if (dataResponsableNivel1.getPuesto() != null) {
+                pj.setPuesto(new integra.model.Puesto(dataResponsableNivel1.getPuesto().getId(), dataResponsableNivel1.getPuesto().getNombre()));
+            }
+            result.setPrimerJefe(pj);
         }
         if (dataResponsableNivel2 != null) {
-            result.setSegundoJefe(new Empleado(dataResponsableNivel2.getId(), dataResponsableNivel2.getNombreCompleto()));
+            Empleado pj2 = new Empleado(dataResponsableNivel2.getId(), dataResponsableNivel2.getNombreCompleto());
+            if (dataResponsableNivel2.getPuesto() != null) {
+                pj2.setPuesto(new integra.model.Puesto(dataResponsableNivel2.getPuesto().getId(), dataResponsableNivel2.getPuesto().getNombre()));
+            }
+            result.setSegundoJefe(pj2);
         }
         result.setFechaSolicituds(data.getDiasSolicitudDescansos()
                 .stream()

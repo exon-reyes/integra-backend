@@ -2,10 +2,13 @@ package integra.vacacion.controller;
 
 import integra.utils.PageResponse;
 import integra.utils.ResponseData;
+import integra.vacacion.domain.model.TipoSolicitud;
 import integra.vacacion.dto.request.FiltroSolicitud;
 import integra.vacacion.dto.request.NuevoEstatusSolicitud;
 import integra.vacacion.dto.response.DetalleSolicitudDTO;
 import integra.vacacion.dto.response.SolicitudesGestionDTO;
+import integra.vacacion.service.EliminarDiaSolicitado;
+import integra.vacacion.service.EliminarSolicitud;
 import integra.vacacion.service.gestion.ActualizarEstatusSolicitud;
 import integra.vacacion.service.gestion.DetallesSolicitud;
 import integra.vacacion.service.gestion.ObtenerSolicitudes;
@@ -22,6 +25,8 @@ public class VacacionGestionController {
     private final ActualizarEstatusSolicitud estatusSolicitudService;
     private final DetallesSolicitud detallesSolicitud;
     private final ObtenerSolicitudes obtenerSolicitudesService;
+    private final EliminarDiaSolicitado eliminarDiaSolicitado;
+    private final EliminarSolicitud eliminarSolicitud;
 
     @GetMapping("/solicitudes")
     public ResponseEntity<PageResponse<SolicitudesGestionDTO>> obtenerSolicitud(@Valid FiltroSolicitud filtro) {
@@ -44,5 +49,15 @@ public class VacacionGestionController {
     public ResponseEntity<ResponseData<Void>> actualizarEstatusDiasGranular(@RequestBody NuevoEstatusSolicitud dictamen) {
         estatusSolicitudService.actualizarDiasGranular(dictamen);
         return ResponseEntity.ok(ResponseData.success("Estatus de los días actualizados correctamente", null));
+    }
+    @PatchMapping("{id}/cancelar")
+    public ResponseEntity<ResponseData<Void>> cancelarSolicitud(@PathVariable Long id, @RequestParam Integer usuarioId, @RequestParam TipoSolicitud tipo) {
+        eliminarDiaSolicitado.eliminar(id, usuarioId,tipo);
+        return ResponseEntity.ok(ResponseData.success("Solicitud cancelada exitosamente", null));
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseData<Void>> eliminarSolicitud(@PathVariable Long id) {
+        eliminarSolicitud.eliminarSolicitud(id);
+        return ResponseEntity.ok(ResponseData.success("Solicitud eliminada exitosamente", null));
     }
 }

@@ -6,7 +6,7 @@
 //import integra.vacacion.domain.model.DashboardSolicitudes;
 //import integra.vacacion.domain.model.EstatusSolicitud;
 //import integra.vacacion.domain.model.TipoSolicitud;
-//import integra.vacacion.dto.request.SolicitudVacacionRequest;
+//import integra.vacacion.dto.request.SolicitudDescansoRequest;
 //import integra.vacacion.dto.response.Festivo;
 //import integra.vacacion.entity.EmpleadoTiempoEntity;
 //import integra.vacacion.entity.PeriodoVacacionalEntity;
@@ -37,7 +37,7 @@
 //    private final VacacionHistorialService historialCommandService;
 //
 //    @Transactional
-//    public void solicitarVacaciones(Integer empleadoId, SolicitudVacacionRequest request) {
+//    public void solicitarVacaciones(Integer empleadoId, SolicitudDescansoRequest request) {
 //        DashboardSolicitudes dashboard = dashboardService.obtenerDashboard(empleadoId);
 //        validatorService.validarAntiguedadMinima(dashboard.getEmpleado());
 //

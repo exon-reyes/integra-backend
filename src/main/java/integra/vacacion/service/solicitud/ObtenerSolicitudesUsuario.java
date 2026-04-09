@@ -41,11 +41,13 @@ public class ObtenerSolicitudesUsuario {
         LocalDate hasta = LocalDate.of(anio, 12, 31);
 
         var solicitudes = solicitudRepository.obtenerSolicitudesPorAnio(empleadoId, desde, hasta);
+        var tempDataEmpleado = new EmpleadoVacacionInfo(dataEmpleado.id(), dataEmpleado.fechaAlta(), dataEmpleado.fechaReingreso(), dataEmpleado.fechaBaja());
+        var fechaIngreso = VacacionUtil.obtenerFechaIngreso(tempDataEmpleado);
+        var proximoAniversario = VacacionUtil.proximoAniversario(fechaIngreso);
 
-        var proximoAniversario = VacacionUtil.proximoAniversario(VacacionUtil.obtenerFechaIngreso(new EmpleadoVacacionInfo(dataEmpleado.id(), dataEmpleado.fechaAlta(), dataEmpleado.fechaReingreso(), dataEmpleado.fechaBaja())));
         var empleado = new Empleado(dataEmpleado.id(), dataEmpleado.nombreCompleto());
-
-        empleado.setAntiguedadAnios(VacacionUtil.calcularAntiguedad(VacacionUtil.obtenerFechaIngreso(new EmpleadoVacacionInfo(dataEmpleado.id(), dataEmpleado.fechaAlta(), dataEmpleado.fechaReingreso(), dataEmpleado.fechaBaja()))));
+        empleado.setAntiguedadAnios(VacacionUtil.calcularAntiguedad(fechaIngreso));
+        empleado.setFechaIngreso(fechaIngreso);
 
         return DashboardSolicitudes.builder()
                 .empleado(empleado)

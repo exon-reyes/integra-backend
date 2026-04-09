@@ -7,12 +7,12 @@ import integra.utils.FolioGenerator;
 import integra.vacacion.core.EstatusPeriodo;
 import integra.vacacion.domain.model.EstatusSolicitud;
 import integra.vacacion.domain.model.TipoSolicitud;
-import integra.vacacion.dto.request.SolicitudVacacionRequest;
+import integra.vacacion.dto.request.SolicitudDescansoRequest;
 import integra.vacacion.dto.response.Festivo;
 import integra.vacacion.entity.DiasSolicitudDescanso;
 import integra.vacacion.entity.SolicitudDescanso;
 import integra.vacacion.exception.VacacionException;
-import integra.vacacion.repository.DiasSolicitudDescansoRepository;
+import integra.vacacion.repository.DiasSolicitudRepository;
 import integra.vacacion.repository.PeriodoVacacionalRepository;
 import integra.vacacion.repository.SolicitudDescansoRepository;
 import integra.vacacion.service.query.CalendarioFestivoService;
@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CrearSolicitudVacacion {
+    private final DiasSolicitudRepository diasRepository;
     private final SolicitudDescansoRepository solicitudRepository;
-    private final DiasSolicitudDescansoRepository diasRepository;
     private final PeriodoVacacionalRepository periodoRepository;
     private final EmpleadoRepository empleadoRepository;
     private final CalendarioFestivoService calendarioFestivoService;
 
-    public void crear(SolicitudVacacionRequest solicitud) {
+    public void crear(SolicitudDescansoRequest solicitud) {
         var periodo = periodoRepository.obtenerPeriodo(solicitud.usuarioId(), EstatusPeriodo.VIGENTE)
                 .orElseThrow(VacacionException::sinPeriodoActivo);
         var empleadoInfo = empleadoRepository.findById(solicitud.usuarioId(), EmpleadoVacacionInfo.class)

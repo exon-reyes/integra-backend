@@ -5,10 +5,8 @@ import integra.vacacion.domain.model.EstatusSolicitud;
 import integra.vacacion.domain.model.TipoSolicitud;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.jspecify.annotations.NonNull;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -62,18 +60,18 @@ public class SolicitudDescanso {
     private EstatusSolicitud estatusNivel2;
 
 
-
-    @OneToMany(mappedBy = "folio")
+    // Cambio 1: Asegurar que el mappedBy apunte al campo correcto en DiasSolicitudDescanso (parece ser 'folio')
+    @OneToMany(mappedBy = "folio", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DiasSolicitudDescanso> diasSolicitudDescansos = new LinkedHashSet<>();
-
     @Column(name = "fecha_accion_nivel1")
     private LocalDate fechaAccionNivel1;
     @Column(name = "fecha_accion_nivel2")
     private LocalDate fechaAccionNivel2;
-    @NonNull
-    @OneToMany
-    @JoinColumn(name = "solicitud_id")
-    private Set<HistorialSolicitudDescanso> historialSolicitudDescansos = new LinkedHashSet<>();
 
+
+    // Cambio 2: El historial TAMBIÉN debe borrarse en cascada si eliminas la solicitud
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "solicitud_id") // Esto indica que el ID de esta tabla está en la otra
+    private Set<HistorialSolicitudDescanso> historialSolicitudDescansos = new LinkedHashSet<>();
 
 }

@@ -3,7 +3,7 @@
 //import integra.utils.ResponseData;
 //import integra.vacacion.domain.model.DashboardSolicitudes;
 //import integra.vacacion.domain.model.TipoSolicitud;
-//import integra.vacacion.dto.request.SolicitudVacacionRequest;
+//import integra.vacacion.dto.request.SolicitudDescansoRequest;
 //import integra.vacacion.dto.response.DashboardGestionSolicitudResponse;
 //import integra.vacacion.dto.response.HistorialSolicitud;
 //import integra.vacacion.dto.response.GestionSolicitudResponse;
@@ -34,7 +34,7 @@
 //    }
 //
 //    @PostMapping("solicitud")
-//    public ResponseEntity<ResponseData<Void>> createSolicitud(@RequestParam Integer empleadoId, @Valid @RequestBody SolicitudVacacionRequest request) {
+//    public ResponseEntity<ResponseData<Void>> createSolicitud(@RequestParam Integer empleadoId, @Valid @RequestBody SolicitudDescansoRequest request) {
 //        if (request.tipoSolicitud().equals(TipoSolicitud.VACACION)) {
 //            vacacionCommandService.solicitarVacaciones(empleadoId, request);
 //        } else if (request.tipoSolicitud().equals(TipoSolicitud.DESCANSO)) {
