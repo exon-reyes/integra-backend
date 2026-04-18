@@ -35,8 +35,8 @@ public class UserService {
     private final ParamsDataProxy systemIdProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public Page<UsuarioBasicoDTO> obtenerUsuarios(Pageable pageable) {
-        return userRepository.obtenerUsuariosRaw(pageable);
+    public Page<UsuarioBasicoDTO> obtenerUsuarios(Integer empleadoId, Pageable pageable) {
+        return userRepository.obtenerUsuariosFiltrado(empleadoId, pageable);
     }
 
     @Transactional

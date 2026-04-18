@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -28,6 +30,18 @@ public class GenerarReporteVacacionesExcelService {
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             Sheet sheet = workbook.getSheetAt(0);
+
+            Row reportDateRow = sheet.getRow(2);
+            if (reportDateRow == null) {
+                reportDateRow = sheet.createRow(2);
+            }
+            Cell reportDateCell = reportDateRow.getCell(16);
+            if (reportDateCell == null) {
+                reportDateCell = reportDateRow.createCell(16);
+            }
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            reportDateCell.setCellValue("Reporte generado el " + LocalDateTime.now().format(dtf));
+
             int rowIdx = 4; // Fila 5 en excel es el index 4
 
             CreationHelper createHelper = workbook.getCreationHelper();

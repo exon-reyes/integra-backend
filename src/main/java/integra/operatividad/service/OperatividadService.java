@@ -1,16 +1,15 @@
 package integra.operatividad.service;
 
-import integra.model.Operatividad;
-import integra.operatividad.repository.OperatividadEntityRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import integra.empresa.entity.HorarioOperativoEntity;
 import integra.empresa.entity.OperatividadEntity;
 import integra.empresa.entity.UnidadEntity;
 import integra.empresa.repository.UnidadHorarioJpaRepository;
+import integra.model.Operatividad;
 import integra.operatividad.dto.GuardarHorariosRequest;
+import integra.operatividad.repository.OperatividadEntityRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

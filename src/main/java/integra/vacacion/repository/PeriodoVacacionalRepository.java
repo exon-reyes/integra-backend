@@ -4,11 +4,9 @@ import integra.vacacion.core.EstatusPeriodo;
 import integra.vacacion.dto.response.ReportePeriodoVacacionalProjection;
 import integra.vacacion.entity.PeriodoVacacionalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,18 +14,36 @@ import java.util.Optional;
 
 @Repository
 public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacacionalEntity, Long> {
-
-
-    List<PeriodoVacacionalEntity> findByEmpleadoId(Integer empleadoId);
-
-
     @Query("SELECT p FROM PeriodoVacacionalEntity p WHERE p.fechaCaducidad < :fecha " + "AND p.estatus = 'VIGENTE'")
     List<PeriodoVacacionalEntity> findPeriodosVencidos(@Param("fecha") LocalDate fecha);
-
-
+    @Query("SELECT p FROM PeriodoVacacionalEntity p WHERE p.empleado.id IN :empleadoIds AND p.estatus = 'VIGENTE'")
+    List<PeriodoVacacionalEntity> findVigentesByEmpleadoIds(@Param("empleadoIds") List<Integer> empleadoIds);
+    boolean existsByEmpleadoIdAndAnioGestionAndEstatus(Integer empleadoId, Integer anioGestion, EstatusPeriodo estatus);
+    boolean existsByEmpleadoIdAndPeriodoNumero(Integer empleadoId, Integer periodoNumero);
+    @Query("""
+            SELECT p FROM PeriodoVacacionalEntity p
+            JOIN FETCH p.empleado e
+            LEFT JOIN FETCH e.unidad
+            WHERE e.codigoEmpleado IN :codigos
+              AND p.estatus IN (integra.vacacion.core.EstatusPeriodo.VIGENTE, integra.vacacion.core.EstatusPeriodo.CONSUMIDO)
+            ORDER BY CASE p.estatus
+                WHEN integra.vacacion.core.EstatusPeriodo.VIGENTE THEN 0
+                ELSE 1 END ASC, p.fechaFin DESC
+            """)
+    List<PeriodoVacacionalEntity> findMejoresPeriodosByCodigos(@Param("codigos") List<String> codigos);
+    @Query("""
+            SELECT p FROM PeriodoVacacionalEntity p
+            JOIN FETCH p.empleado e
+            LEFT JOIN FETCH e.unidad
+            WHERE e.codigoEmpleado IN :codigos
+            ORDER BY CASE p.estatus
+                WHEN integra.vacacion.core.EstatusPeriodo.VIGENTE THEN 0
+                WHEN integra.vacacion.core.EstatusPeriodo.CONSUMIDO THEN 1
+                ELSE 2 END ASC, p.fechaFin DESC
+            """)
+    List<PeriodoVacacionalEntity> findTodosLosPeriodosByCodigos(@Param("codigos") List<String> codigos);
     @Query("select p from PeriodoVacacionalEntity p where p.empleado.id = ?1 and p.estatus = ?2")
     Optional<PeriodoVacacionalEntity> obtenerPeriodo(Integer empleadoId, EstatusPeriodo estatus);
-
     @Query(value = """
             SELECT p.* FROM periodos_vacacionales p
             WHERE p.empleado_id = :empleadoId
@@ -35,18 +51,6 @@ public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacaci
             LIMIT 1
             """, nativeQuery = true)
     Optional<PeriodoVacacionalEntity> obtenerMejorPeriodo(@Param("empleadoId") Integer empleadoId);
-
-
-    @Transactional
-    @Modifying
-    @Query("update PeriodoVacacionalEntity p set p.diasRestantes = ?1 where p.id = ?2")
-    void actualizarDisponibilidadad(Integer diasRestantes, Long id);
-
-    List<PeriodoVacacionalEntity> findByEstatus(EstatusPeriodo estatus);
-
-
-    boolean existsByEmpleadoIdAndAnioLaboral(Integer empleadoId, Integer anioLaboral);
-
     @Query(value = """
             SELECT 
                 e.codigo_empleado as clave,
@@ -72,14 +76,14 @@ public interface PeriodoVacacionalRepository extends JpaRepository<PeriodoVacaci
                            PARTITION BY p2.empleado_id
                            ORDER BY FIELD(p2.estatus, 'VIGENTE', 'CONSUMIDO', 'VENCIDO') ASC, p2.fecha_fin DESC
                        ) as rn
-                FROM integra.periodos_vacacionales p2
+                FROM periodos_vacacionales p2
             ) p
-            JOIN integra.empleado e ON e.id = p.empleado_id
-            LEFT JOIN integra.unidad u ON u.id = e.unidad_id
-            LEFT JOIN integra.puesto pu ON pu.id = e.puesto_id
-            LEFT JOIN integra.empleado j ON j.id = e.jefe_id
-            LEFT JOIN integra.empleado sj ON sj.id = e.segundo_jefe_id
-            WHERE p.rn = 1 AND e.estatus = 'A'
+            JOIN empleado e ON e.id = p.empleado_id
+            LEFT JOIN unidad u ON u.id = e.unidad_id
+            LEFT JOIN puesto pu ON pu.id = e.puesto_id
+            LEFT JOIN empleado j ON j.id = e.jefe_id
+            LEFT JOIN empleado sj ON sj.id = e.segundo_jefe_id
+            WHERE p.rn = 1 AND e.estatus <> 'B'
             """, nativeQuery = true)
     List<ReportePeriodoVacacionalProjection> obtenerReporteMejoresPeriodos();
 }

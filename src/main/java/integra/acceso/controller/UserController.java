@@ -24,9 +24,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<PageResponse<UsuarioBasicoDTO>> getAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
-        Page<UsuarioBasicoDTO> result = userService.obtenerUsuarios(PageRequest.of(page, size));
+    public ResponseEntity<PageResponse<UsuarioBasicoDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) Integer empleadoId) {
 
+        Page<UsuarioBasicoDTO> result = userService.obtenerUsuarios(empleadoId, PageRequest.of(page, size));
         return ResponseEntity.ok(new PageResponse<>(result));
     }
 

@@ -12,6 +12,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,14 +20,19 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Objects;
 
 @Slf4j
 public class ImageUtils {
 
-    private static final DateTimeFormatter FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final DateTimeFormatter FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss", Locale.ROOT);
     private static final String IMAGE_FORMAT = "jpg";
-    private static final float COMPRESSION_QUALITY = 0.4f;
+    private static final float COMPRESSION_QUALITY = 0.3f;
+
+    static {
+        ImageIO.scanForPlugins();
+    }
 
     public static String saveBase64Image(String base64Data, Integer id, Path directory) throws IOException {
         validateInput(base64Data, id);
@@ -35,22 +41,27 @@ public class ImageUtils {
         String filename = generateFilename(id);
 
         byte[] imageBytes = Base64.getDecoder().decode(cleanData);
-        Path filePath = directory.resolve(filename);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        if (image == null) throw new IOException("No se pudo decodificar la imagen base64");
+        byte[] compressed = compressImage(image);
 
-        Files.write(filePath, imageBytes);
+        Path filePath = directory.resolve(filename).normalize();
+        if (!filePath.startsWith(directory.normalize())) {
+            throw new SecurityException("Acceso denegado: ruta fuera del directorio permitido");
+        }
+        Files.write(filePath, compressed);
         return filename;
     }
 
     public static Resource getImage(String filename, Path directory) {
         Path filePath = getVerifiedFilePath(filename, directory);
-
         try {
             Resource resource = new UrlResource(filePath.toUri());
             if (!resource.exists()) {
                 throw new RuntimeException("Archivo no encontrado: " + filename);
             }
             return resource;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error obteniendo imagen: " + filename, e);
         }
     }
@@ -88,9 +99,10 @@ public class ImageUtils {
 
     private static Path getVerifiedFilePath(String filename, Path directory) {
         Objects.requireNonNull(filename, "El nombre de archivo no puede ser nulo");
-
         Path filePath = directory.resolve(filename).normalize();
-
+        if (!filePath.startsWith(directory.normalize())) {
+            throw new SecurityException("Acceso denegado: ruta fuera del directorio permitido");
+        }
         if (!Files.exists(filePath)) {
             throw new RuntimeException("Archivo no encontrado: " + filename);
         }
@@ -98,13 +110,11 @@ public class ImageUtils {
     }
 
     private static BufferedImage resizeImage(BufferedImage originalImage, int width, int height) {
-        Image resized = originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
         Graphics2D g2d = outputImage.createGraphics();
         try {
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g2d.drawImage(resized, 0, 0, null);
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.drawImage(originalImage, 0, 0, width, height, null);
         } finally {
             g2d.dispose();
         }
@@ -118,11 +128,9 @@ public class ImageUtils {
             ImageWriter writer = ImageIO.getImageWritersByFormatName(IMAGE_FORMAT).next();
             try {
                 writer.setOutput(ios);
-
                 ImageWriteParam param = writer.getDefaultWriteParam();
                 param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 param.setCompressionQuality(COMPRESSION_QUALITY);
-
                 writer.write(null, new IIOImage(image, null, null), param);
             } finally {
                 writer.dispose();

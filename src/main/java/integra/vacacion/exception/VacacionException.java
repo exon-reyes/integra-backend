@@ -132,4 +132,9 @@ public class VacacionException extends BusinessException {
         return new VacacionException(ErrorCode.VAC_ESTADO_INVALIDO,
                 "Tu solicitud ya fue aprobada por un jefe. Para cancelarla, solicita a tu jefe/rrhh que la rechace primero.");
     }
+
+    public static VacacionException politicaNoEncontrada() {
+        return new VacacionException(ErrorCode.VAC_POLITICA_NO_ENCONTRADA,
+                "No se encontró política de vacaciones vigente");
+    }
 }

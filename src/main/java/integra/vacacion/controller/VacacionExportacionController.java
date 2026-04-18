@@ -1,5 +1,6 @@
 package integra.vacacion.controller;
 
+import integra.vacacion.service.gestion.GenerarPapeletaExcelService;
 import integra.vacacion.service.gestion.GenerarReporteVacacionesExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 public class VacacionExportacionController {
 
     private final GenerarReporteVacacionesExcelService generarReporteVacacionesExcelService;
-    private final integra.vacacion.service.gestion.GenerarPapeletaExcelService generarPapeletaExcelService;
+    private final GenerarPapeletaExcelService generarPapeletaExcelService;
 
     @GetMapping
     public ResponseEntity<byte[]> exportarValoresActuales() {

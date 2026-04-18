@@ -19,7 +19,7 @@ public class VencimientoPeriodoService {
 
     private final PeriodoVacacionalRepository periodoRepository;
 
-    @Scheduled(cron = "0 0 3 * * *") // 3 AM diario
+    @Scheduled(cron = "0 40 3 * * *") // 3 AM diario
     @Transactional
     public void vencerPeriodosExpirados() {
         log.info("Iniciando proceso de vencimiento de períodos vacacionales");
@@ -35,12 +35,10 @@ public class VencimientoPeriodoService {
                         periodo.getAnioLaboral(),
                         periodo.getDiasRestantes());
             }
-
             periodo.setEstatus(EstatusPeriodo.VENCIDO);
             periodoRepository.save(periodo);
             vencidos++;
         }
-
         log.info("Períodos vencidos: {}", vencidos);
     }
 }

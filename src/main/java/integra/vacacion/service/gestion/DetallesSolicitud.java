@@ -3,7 +3,6 @@ package integra.vacacion.service.gestion;
 import integra.empleado.entity.EmpleadoEntity;
 import integra.empresa.entity.UnidadEntity;
 import integra.model.Empleado;
-import integra.model.Unidad;
 import integra.vacacion.domain.model.EstatusSolicitud;
 import integra.vacacion.domain.model.TipoSolicitud;
 import integra.vacacion.dto.response.DetalleSolicitudDTO;

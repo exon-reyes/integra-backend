@@ -46,4 +46,6 @@ public class EmpleadoService {
     public <T> Optional<T> obtenerPorId(Integer id, Class<T> type) {
         return empleadoRepository.findById(id, type);
     }
+
+
 }

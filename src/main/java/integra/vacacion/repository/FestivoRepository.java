@@ -14,9 +14,4 @@ public interface FestivoRepository extends JpaRepository<FestivoEntity, Long> {
 
     @Query("SELECT f FROM FestivoEntity f WHERE f.fecha BETWEEN :inicio AND :fin")
     List<FestivoEntity> findFestivosBetween(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
-
-    boolean existsByFecha(LocalDate fecha);
-
-    @Query("SELECT f FROM FestivoEntity f WHERE YEAR(f.fecha) = :anio ORDER BY f.fecha ASC")
-    List<FestivoEntity> findFestivosDelAnio(@Param("anio") int anio);
 }

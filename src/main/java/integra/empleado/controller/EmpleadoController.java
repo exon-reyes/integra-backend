@@ -2,9 +2,11 @@ package integra.empleado.controller;
 
 import integra.empleado.dto.ActualizarAvatarRequest;
 import integra.empleado.service.ActualizarAvatarEmpleado;
+import integra.empleado.service.ConsultarAsignacionesEmpleados;
 import integra.empleado.service.ConsultarCatalogoEmpleados;
 import integra.empleado.util.FiltroEmpleado;
 import integra.model.Empleado;
+import integra.utils.PageResponse;
 import integra.utils.ResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -20,11 +22,18 @@ import java.util.List;
 @RequestMapping("empleados")
 class EmpleadoController {
     private final ConsultarCatalogoEmpleados catalagoEmpleados;
+    private final ConsultarAsignacionesEmpleados consultarAsignaciones;
     private final ActualizarAvatarEmpleado actualizarAvatarEmpleado;
+    private final integra.empleado.service.ActualizarResponsablesEmpleado actualizarResponsablesEmpleado;
 
     @GetMapping()
     public ResponseEntity<ResponseData<List<Empleado>>> obtenerEmpleados(FiltroEmpleado filtro) {
         return ResponseEntity.ok(ResponseData.of(catalagoEmpleados.consultar(filtro), "Empleado"));
+    }
+
+    @GetMapping("asignaciones")
+    public ResponseEntity<PageResponse<?>> obtenerAsignaciones(FiltroEmpleado filtro) {
+        return ResponseEntity.ok(consultarAsignaciones.consultar(filtro));
     }
 
     @GetMapping("supervisores")
@@ -52,6 +61,13 @@ class EmpleadoController {
         return ResponseEntity.ok(ResponseData.of(null, "Avatar eliminado correctamente"));
     }
 
+    @PutMapping("{id}/responsables")
+    public ResponseEntity<ResponseData<Void>> actualizarResponsables(@PathVariable Integer id,
+                                                                     @RequestBody integra.empleado.dto.ActualizarResponsableRequest request) {
+        actualizarResponsablesEmpleado.actualizarResponsables(id, request);
+        return ResponseEntity.ok(ResponseData.of(null, "Responsables actualizados correctamente"));
+    }
+
     @GetMapping(value = "{id}/avatar/imagen")
     public ResponseEntity<Resource> obtenerImagenAvatar(@PathVariable Integer id) {
         Resource resource = actualizarAvatarEmpleado.obtenerAvatarEnBytes(id);
@@ -72,4 +88,5 @@ class EmpleadoController {
                 .contentType(MediaType.parseMediaType(mimeType))
                 .body(resource);
     }
+
 }

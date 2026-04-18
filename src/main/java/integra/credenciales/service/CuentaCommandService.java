@@ -2,13 +2,13 @@ package integra.credenciales.service;
 
 import integra.credenciales.entity.CuentaEntity;
 import integra.credenciales.entity.TipoCuentaEntity;
+import integra.credenciales.exception.CredencialesException;
 import integra.credenciales.repository.CuentaEntityRepository;
 import integra.credenciales.repository.TipoCuentaRepository;
 import integra.credenciales.request.NuevaCuenta;
 import integra.credenciales.request.TipoCuenta;
 import integra.empresa.entity.DepartamentoEntity;
 import integra.empresa.entity.UnidadEntity;
-import integra.credenciales.exception.CredencialesException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

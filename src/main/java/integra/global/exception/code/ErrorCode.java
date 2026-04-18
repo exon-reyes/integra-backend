@@ -171,7 +171,8 @@ public enum ErrorCode {
     VAC_ERROR_TECNICO("VAC-015", "Error técnico al procesar la solicitud", 500),
     VAC_DESCANSOS_NO_CONFIGURADOS("VAC-016", "Días de descanso no configurados", 400),
     VAC_REACTIVACION_RECHAZADA("VAC-017","No se puede reactivar la solicitud",400),
-    VAC_FOLIO_NO_ENCONTRADO("VAC-018", "Folio de solicitud no encontrado", 404);
+    VAC_FOLIO_NO_ENCONTRADO("VAC-018", "Folio de solicitud no encontrado", 404),
+    VAC_POLITICA_NO_ENCONTRADA("VAC-019", "No se encontró política de vacaciones vigente", 404);
     private final String code;
     private final String title;
     private final int httpStatus;

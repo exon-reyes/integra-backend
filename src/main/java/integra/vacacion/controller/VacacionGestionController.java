@@ -3,14 +3,17 @@ package integra.vacacion.controller;
 import integra.utils.PageResponse;
 import integra.utils.ResponseData;
 import integra.vacacion.domain.model.TipoSolicitud;
+import integra.vacacion.dto.request.FiltroPeriodo;
 import integra.vacacion.dto.request.FiltroSolicitud;
 import integra.vacacion.dto.request.NuevoEstatusSolicitud;
 import integra.vacacion.dto.response.DetalleSolicitudDTO;
+import integra.vacacion.dto.response.PeriodoVacacionalResumen;
 import integra.vacacion.dto.response.SolicitudesGestionDTO;
 import integra.vacacion.service.EliminarDiaSolicitado;
 import integra.vacacion.service.EliminarSolicitud;
 import integra.vacacion.service.gestion.ActualizarEstatusSolicitud;
 import integra.vacacion.service.gestion.DetallesSolicitud;
+import integra.vacacion.service.gestion.ObtenerPeriodos;
 import integra.vacacion.service.gestion.ObtenerSolicitudes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +28,14 @@ public class VacacionGestionController {
     private final ActualizarEstatusSolicitud estatusSolicitudService;
     private final DetallesSolicitud detallesSolicitud;
     private final ObtenerSolicitudes obtenerSolicitudesService;
+    private final ObtenerPeriodos obtenerPeriodosService;
     private final EliminarDiaSolicitado eliminarDiaSolicitado;
     private final EliminarSolicitud eliminarSolicitud;
+
+    @GetMapping("/periodos")
+    public ResponseEntity<PageResponse<PeriodoVacacionalResumen>> obtenerPeriodos(@Valid FiltroPeriodo filtro) {
+        return ResponseEntity.ok(new PageResponse<>(obtenerPeriodosService.consultar(filtro)));
+    }
 
     @GetMapping("/solicitudes")
     public ResponseEntity<PageResponse<SolicitudesGestionDTO>> obtenerSolicitud(@Valid FiltroSolicitud filtro) {

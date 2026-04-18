@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "dias_solicitud_descanso", schema = "integra")
+@Table(name = "dias_solicitud_descanso")
 public class DiasSolicitudDescanso {
 
 

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "periodos_vacacionales", schema = "integra")
+@Table(name = "periodos_vacacionales")
 public class PeriodoVacacionalEntity {
 
     @Id

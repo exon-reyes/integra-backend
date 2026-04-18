@@ -6,13 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "historial_solicitud_descanso", schema = "integra")
+@Table(name = "historial_solicitud_descanso")
 public class HistorialSolicitudDescanso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

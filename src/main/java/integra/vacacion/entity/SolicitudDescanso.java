@@ -15,7 +15,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "solicitud_descanso", schema = "integra")
+@Table(name = "solicitud_descanso")
 public class SolicitudDescanso {
 
 

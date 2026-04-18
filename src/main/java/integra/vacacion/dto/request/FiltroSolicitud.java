@@ -1,6 +1,5 @@
 package integra.vacacion.dto.request;
 
-import integra.vacacion.domain.model.EstatusSolicitud;
 import lombok.Data;
 
 @Data

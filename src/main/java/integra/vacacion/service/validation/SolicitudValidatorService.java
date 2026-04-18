@@ -1,7 +1,11 @@
 package integra.vacacion.service.validation;
 
 import integra.model.Empleado;
-import integra.vacacion.domain.model.*;
+import integra.vacacion.domain.model.DashboardSolicitudes;
+import integra.vacacion.domain.model.SolicitudEmpleado;
+import integra.vacacion.domain.model.SolicitudesDescanso;
+import integra.vacacion.domain.model.SolicitudesVacaciones;
+import integra.vacacion.dto.response.FechaSolicitud;
 import integra.vacacion.dto.response.Festivo;
 import integra.vacacion.exception.VacacionException;
 import org.springframework.stereotype.Service;
@@ -11,7 +15,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import integra.vacacion.dto.response.FechaSolicitud;
 
 @Service
 public class SolicitudValidatorService {
@@ -114,4 +117,4 @@ public class SolicitudValidatorService {
             }
         }
     }
-}
+}

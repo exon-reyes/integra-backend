@@ -13,7 +13,7 @@ spring:
   #      write-null-map-values: false
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/integra?useSSL=false
+    url: jdbc:mariadb://localhost:3306/comialex?useSSL=false
     username: root
     password: nova1912
     hikari:
@@ -28,7 +28,7 @@ spring:
       hibernate:
         default_schema: comialex
     #        format_sql: true
-    show-sql: true
+    #    show-sql: true
     open-in-view: false
 
   mail:
@@ -135,6 +135,9 @@ logging:
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n%throwable"
 
 integra:
+  sync:
+    usuarios:
+      output-dir: ./integra-config/sync-usuarios/
   cache:
     specs:
       unidadContacto:
@@ -169,7 +172,7 @@ integra:
         expireAfterAccess: 24h      # Renueva si se accede en 24 horas
         maximumSize: 5000           # Máximo 5000 empleados en caché
         recordStats: true           # Habilitar métricas
-        initialCapacity: 200        # Capacidad inicial
+        initialCapacity: 590        # Capacidad inicial
       parametros:
         expireAfterWrite: 1h
         maximumSize: 100

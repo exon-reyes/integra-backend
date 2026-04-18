@@ -92,6 +92,35 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<UsuarioBasicoDTO> obtenerUsuariosRaw(Pageable pageable);
 
     @Query(value = """
+            SELECT
+                u.id ,
+                u.username,
+                u.empleado_id AS empleadoId,
+                e.email,
+                e.nombre_completo AS nombreCompleto,
+                u.activo,
+                GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ', ') AS roles,
+                d.nombre AS departamento,
+                p.nombre AS puesto
+            FROM users u
+            LEFT JOIN user_roles ur ON ur.user_id = u.id
+            LEFT JOIN roles r ON r.id = ur.role_id
+            LEFT JOIN empleado e ON e.id = u.empleado_id
+            LEFT JOIN departamento d ON d.id = e.departamento_id
+            LEFT JOIN puesto p ON p.id = e.puesto_id
+            WHERE (:empleadoId IS NULL OR u.empleado_id = :empleadoId)
+            GROUP BY
+                u.id, u.username, u.empleado_id,
+                e.email, e.nombre_completo,
+                u.activo, d.nombre, p.nombre
+            """, countQuery = """
+            SELECT COUNT(DISTINCT u.id)
+            FROM users u
+            WHERE (:empleadoId IS NULL OR u.empleado_id = :empleadoId)
+            """, nativeQuery = true)
+    Page<UsuarioBasicoDTO> obtenerUsuariosFiltrado(@Param("empleadoId") Integer empleadoId, Pageable pageable);
+
+    @Query(value = """
             SELECT rp.permission_id AS permissionId, 'ROL' AS origen
             FROM user_roles ur
             INNER JOIN role_permissions rp ON ur.role_id = rp.role_id
@@ -102,6 +131,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             WHERE up.user_id = :idUsuario
             """, nativeQuery = true)
     List<PermissionProjection> findAllPermissionsRaw(@Param("idUsuario") Long idUsuario);
+
+    List<User> findByEmpleadoIdIn(List<Integer> empleadoIds);
 
     @Query(value = """
             SELECT COUNT(*) > 0

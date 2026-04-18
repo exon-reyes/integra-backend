@@ -1,6 +1,5 @@
 package integra.asistencia.dto;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record CruceKioscoDTO(

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "escalas_vacaciones", schema = "integra",
+@Table(name = "escalas_vacaciones",
         uniqueConstraints = @UniqueConstraint(columnNames = {"politica_id", "anio_antiguedad"}))
 public class EscalaVacacionEntity {
 

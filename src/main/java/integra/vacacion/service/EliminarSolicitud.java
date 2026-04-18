@@ -1,6 +1,7 @@
 package integra.vacacion.service;
 
 import integra.vacacion.domain.model.EstatusSolicitud;
+import integra.vacacion.domain.model.TipoSolicitud;
 import integra.vacacion.exception.VacacionException;
 import integra.vacacion.repository.SolicitudDescansoRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,9 @@ public class EliminarSolicitud {
             throw VacacionException.estadoInvalido("eliminar", solicitud.getEstatus().name());
         }
         var periodo=solicitud.getPeriodo();
-        periodo.setDiasRestantes(periodo.getDiasRestantes() + solicitud.getDiasSolicitados());
+        if(solicitud.getTipoSolicitud() == TipoSolicitud.VACACION){
+            periodo.setDiasRestantes(periodo.getDiasRestantes() + solicitud.getDiasSolicitados());
+        }
         solicitudRepository.deleteById(id);
     }
 }
