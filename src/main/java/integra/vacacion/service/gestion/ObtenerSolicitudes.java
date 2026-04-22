@@ -113,7 +113,10 @@ public class ObtenerSolicitudes {
         ));
 
         query.where(buildPredicates(cb, root, filtro).toArray(new Predicate[0]));
-        query.orderBy(cb.desc(root.get("id")));
+        query.orderBy(
+                cb.asc(emp.get("nombreCompleto")),
+                cb.desc(root.get("id"))
+        );
 
         return em.createQuery(query);
     }
