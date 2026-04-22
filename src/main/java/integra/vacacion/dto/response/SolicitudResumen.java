@@ -2,6 +2,7 @@ package integra.vacacion.dto.response;
 
 import integra.vacacion.domain.model.EstatusSolicitud;
 import integra.vacacion.domain.model.TipoSolicitud;
+import java.time.LocalDate;
 
 public record SolicitudResumen(
         Long id,
@@ -14,6 +15,9 @@ public record SolicitudResumen(
         Integer empleadoId,
         String empleadoCodigo,
         String empleadoNombre,
-        String unidadNombre
+        String unidadNombre,
+        String primerJefeNombre,
+        String segundoJefeNombre,
+        LocalDate fechaCreacion
 ) {
 }

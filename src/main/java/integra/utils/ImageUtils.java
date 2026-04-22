@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -15,8 +16,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
@@ -34,6 +37,35 @@ public class ImageUtils {
         ImageIO.scanForPlugins();
     }
 
+    /**
+     * Guarda un MultipartFile directamente al disco sin recomprimir.
+     * La imagen ya llega optimizada (resize + compresión) desde el cliente Angular.
+     * Costo de CPU: mínimo (solo transferencia de bytes al disco).
+     */
+    public static String saveMultipartImage(MultipartFile file, Integer id, Path directory) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("El archivo de imagen no puede estar vacío");
+        }
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("ID inválido: " + id);
+        }
+
+        String filename = generateFilename(id);
+        Path filePath = directory.resolve(filename).normalize();
+        if (!filePath.startsWith(directory.normalize())) {
+            throw new SecurityException("Acceso denegado: ruta fuera del directorio permitido");
+        }
+
+        try (InputStream in = file.getInputStream()) {
+            Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return filename;
+    }
+
+    /**
+     * @deprecated Usar {@link #saveMultipartImage} para transferencias desde el checador.
+     * Mantener solo para módulos que aún envíen Base64.
+     */
     public static String saveBase64Image(String base64Data, Integer id, Path directory) throws IOException {
         validateInput(base64Data, id);
 

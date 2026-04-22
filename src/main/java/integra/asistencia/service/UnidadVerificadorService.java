@@ -73,6 +73,5 @@ public class UnidadVerificadorService {
         incidencia.setPathImagen(imagen);
 
         repository.save(incidencia);
-        log.info("⚙️ Incidencia Kiosco registrada async. EmpID: {}, Tipo: {}", empleadoId, tipoIncidencia);
     }
 }

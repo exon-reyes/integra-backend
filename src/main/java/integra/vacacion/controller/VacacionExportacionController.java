@@ -1,6 +1,9 @@
 package integra.vacacion.controller;
 
+import integra.vacacion.dto.request.FiltroSolicitud;
 import integra.vacacion.service.gestion.GenerarPapeletaExcelService;
+import integra.vacacion.service.gestion.GenerarReporteSolicitudesExcelService;
+import integra.vacacion.service.gestion.GenerarReporteSolicitudesLineaExcelService;
 import integra.vacacion.service.gestion.GenerarReporteVacacionesExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +21,8 @@ public class VacacionExportacionController {
 
     private final GenerarReporteVacacionesExcelService generarReporteVacacionesExcelService;
     private final GenerarPapeletaExcelService generarPapeletaExcelService;
+    private final GenerarReporteSolicitudesExcelService generarReporteSolicitudesExcelService;
+    private final GenerarReporteSolicitudesLineaExcelService generarReporteSolicitudesLineaExcelService;
 
     @GetMapping
     public ResponseEntity<byte[]> exportarValoresActuales() {
@@ -43,4 +48,40 @@ public class VacacionExportacionController {
 
         return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
     }
+
+    @GetMapping("/solicitudes")
+    public ResponseEntity<byte[]> exportarSolicitudes(FiltroSolicitud filtro) {
+//        byte[] excelContent = generarReporteSolicitudesExcelService.generar(filtro);
+//
+//        String nombre = "Solicitudes_" + LocalDate.now() + ".xlsx";
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+//        headers.setContentDispositionFormData("attachment", nombre);
+//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+//
+//        return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+
+        byte[] excelContent = generarReporteSolicitudesLineaExcelService.generar(filtro);
+        String nombre = "Solicitudes_Linea_" + LocalDate.now() + ".xlsx";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDispositionFormData("attachment", nombre);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+    }
+
+//    @GetMapping("/solicitudes/linea")
+//    public ResponseEntity<byte[]> exportarSolicitudesLinea(FiltroSolicitud filtro) {
+//        byte[] excelContent = generarReporteSolicitudesLineaExcelService.generar(filtro);
+//
+//        String nombre = "Solicitudes_Linea_" + LocalDate.now() + ".xlsx";
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+//        headers.setContentDispositionFormData("attachment", nombre);
+//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+//
+//        return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+//    }
 }
+

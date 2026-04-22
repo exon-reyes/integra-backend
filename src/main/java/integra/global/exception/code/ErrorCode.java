@@ -148,7 +148,7 @@ public enum ErrorCode {
     ASI_INVALID_TIME("ASI-003", "Hora de registro inválida", 400),
     ASI_OUTSIDE_SCHEDULE("ASI-004", "Registro fuera del horario permitido", 409),
     ASI_KIOSCO_NOT_CONFIGURED("ASI-005", "Kiosco no configurado", 400),
-    ASI_KIOSCO_INVALID_PIN("ASI-006", "PIN de kiosco inválido", 401),
+    ASI_KIOSCO_INVALID_PIN("ASI-006", "PIN de kiosco inválido", 404),
     ASI_KIOSCO_BLOCKED("ASI-007", "Kiosco bloqueado", 403),
 
     // ============================================================================

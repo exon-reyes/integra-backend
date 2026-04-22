@@ -29,13 +29,9 @@ public class AsistenciaQueryController {
         if (nip == null || nip.trim().isEmpty()) {
             throw new AsistenciaDomainException(ErrorCode.VAL_MISSING_FIELD, "El PIN no puede estar vacío");
         }
-
-        try {
             EmpleadoJornada result = jornadaService.execute(nip);
             return ResponseEntity.ok(ResponseData.of(result, "Jornada de empleado consultado"));
-        } catch (Exception e) {
-            throw new RuntimeException("Error al consultar la jornada del empleado", e.getCause());
-        }
+
     }
 
     @GetMapping("{id}/perfil")

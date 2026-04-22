@@ -4,6 +4,7 @@ import integra.utils.ImageUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,6 +39,14 @@ public class WorkImageService {
 
     public String saveImg(String data, Integer idEmpleado) throws IOException {
         return ImageUtils.saveBase64Image(data, idEmpleado, directorioFotos);
+    }
+
+    /**
+     * Guarda un MultipartFile directamente al disco sin costo de recompresión.
+     * Usar cuando la imagen es enviada desde el checador Angular (ya optimizada).
+     */
+    public String saveMultipartImg(MultipartFile file, Integer idEmpleado) throws IOException {
+        return ImageUtils.saveMultipartImage(file, idEmpleado, directorioFotos);
     }
 
     public Resource getImg(String filename) {

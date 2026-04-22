@@ -8,5 +8,6 @@ public interface DiaSolicitudProjection {
     Long getId();
     Long getFolioId();
     LocalDate getFecha();
+    EstatusSolicitud getEstatusNivel1();
     EstatusSolicitud getEstatusNivel2();
 }

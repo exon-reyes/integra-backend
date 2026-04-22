@@ -41,23 +41,23 @@ public class ObtenerSolicitudes {
         if (total == 0) return new PageImpl<>(List.of(), pageable, 0);
 
         List<SolicitudResumen> resumenes = buscarSolicitudes(filtro, pageable);
+        return new PageImpl<>(mapearConDias(resumenes), pageable, total);
+    }
 
-        // 1. Obtener los IDs de las solicitudes de la página actual
+    public List<SolicitudesGestionDTO> getAllSinPaginacion(FiltroSolicitud filtro) {
+        List<SolicitudResumen> resumenes = buscarSolicitudesSinPaginacion(filtro);
+        return mapearConDias(resumenes);
+    }
+
+    private List<SolicitudesGestionDTO> mapearConDias(List<SolicitudResumen> resumenes) {
         List<Long> ids = resumenes.stream().map(SolicitudResumen::id).toList();
 
-        // 2. Agrupar los días por Folio ID usando un Map
-        // Esto es CRUCIAL para que cada solicitud solo tenga sus días
         Map<Long, List<DiaSolicitudProjection>> diasPorFolio = diasRepository.findDiasBySolicitudIds(ids).stream()
-                // Asegúrate de que DiaSolicitudProjection tenga getFolioId()
                 .collect(Collectors.groupingBy(DiaSolicitudProjection::getFolioId));
 
-        // 3. Mapeo final pasando solo la lista correspondiente del Map
-        List<SolicitudesGestionDTO> dtos = resumenes.stream()
-                .map(r -> SolicitudGestionMapper.toDTO(r, diasPorFolio.getOrDefault(r.id(), List.of()) // Solo pasa sus días
-                ))
+        return resumenes.stream()
+                .map(r -> SolicitudGestionMapper.toDTO(r, diasPorFolio.getOrDefault(r.id(), List.of())))
                 .collect(Collectors.toList());
-
-        return new PageImpl<>(dtos, pageable, total);
     }
 
     private long contarSolicitudes(FiltroSolicitud filtro) {
@@ -65,32 +65,57 @@ public class ObtenerSolicitudes {
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<SolicitudDescanso> root = query.from(SolicitudDescanso.class);
 
-        // Solo hacemos el Join si el filtro realmente lo requiere
         Predicate[] predicates = buildPredicates(cb, root, filtro).toArray(new Predicate[0]);
-
         query.select(cb.count(root)).where(predicates);
         return em.createQuery(query).getSingleResult();
     }
 
     private List<SolicitudResumen> buscarSolicitudes(FiltroSolicitud filtro, Pageable pageable) {
+        return buildResumenQuery(filtro)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .setHint("org.hibernate.readOnly", true)
+                .getResultList();
+    }
+
+    private List<SolicitudResumen> buscarSolicitudesSinPaginacion(FiltroSolicitud filtro) {
+        return buildResumenQuery(filtro)
+                .setHint("org.hibernate.readOnly", true)
+                .getResultList();
+    }
+
+    private jakarta.persistence.TypedQuery<SolicitudResumen> buildResumenQuery(FiltroSolicitud filtro) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<SolicitudResumen> query = cb.createQuery(SolicitudResumen.class);
         Root<SolicitudDescanso> root = query.from(SolicitudDescanso.class);
 
-        // Joins necesarios para la proyección del resumen
         Join<SolicitudDescanso, EmpleadoEntity> emp = root.join("empleado", JoinType.INNER);
         Join<EmpleadoEntity, UnidadEntity> unidad = emp.join("unidad", JoinType.LEFT);
+        Join<EmpleadoEntity, EmpleadoEntity> jefe = emp.join("jefe", JoinType.LEFT);
+        Join<EmpleadoEntity, EmpleadoEntity> segundoJefe = emp.join("segundoJefe", JoinType.LEFT);
 
-        query.select(cb.construct(SolicitudResumen.class, root.get("id"), root.get("folioSolicitud"), root.get("tipoSolicitud"), root.get("estatus"), root.get("estatusNivel1"), root.get("estatusNivel2"), root.get("diasSolicitados"), emp.get("id"), emp.get("codigoEmpleado"), emp.get("nombreCompleto"), unidad.get("nombreCompleto")));
+        query.select(cb.construct(
+                SolicitudResumen.class,
+                root.get("id"),
+                root.get("folioSolicitud"),
+                root.get("tipoSolicitud"),
+                root.get("estatus"),
+                root.get("estatusNivel1"),
+                root.get("estatusNivel2"),
+                root.get("diasSolicitados"),
+                emp.get("id"),
+                emp.get("codigoEmpleado"),
+                emp.get("nombreCompleto"),
+                unidad.get("nombreCompleto"),
+                jefe.get("nombreCompleto"),
+                segundoJefe.get("nombreCompleto"),
+                root.get("fechaCreacion")
+        ));
 
         query.where(buildPredicates(cb, root, filtro).toArray(new Predicate[0]));
-        query.orderBy(cb.desc(root.get("id"))); // ID suele ser más rápido que Folio si es secuencial
+        query.orderBy(cb.desc(root.get("id")));
 
-        return em.createQuery(query)
-                .setFirstResult((int) pageable.getOffset())
-                .setMaxResults(pageable.getPageSize())
-                .setHint("org.hibernate.readOnly", true) // Hint de optimización para lectura
-                .getResultList();
+        return em.createQuery(query);
     }
 
     private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<SolicitudDescanso> root, FiltroSolicitud filtro) {
@@ -102,6 +127,10 @@ public class ObtenerSolicitudes {
                 predicates.add(cb.equal(root.get("estatus"), EstatusSolicitud.valueOf(filtro.getEstatus())));
             } catch (IllegalArgumentException ignored) {
             }
+        }
+
+        if (filtro.getFechaDesde() != null && filtro.getFechaHasta() != null) {
+            predicates.add(cb.between(root.get("fechaCreacion"), filtro.getFechaDesde(), filtro.getFechaHasta()));
         }
 
         boolean needsEmpJoin = filtro.getResponsableId() != null

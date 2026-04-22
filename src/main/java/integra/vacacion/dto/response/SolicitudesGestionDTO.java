@@ -3,7 +3,7 @@ package integra.vacacion.dto.response;
 import integra.model.Empleado;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -20,4 +20,8 @@ public class SolicitudesGestionDTO {
     private List<FechaSolicitud> solicitudes;
     private String estatusGeneral;
     private String tipoSolicitud;
+    private String primerJefe;
+    private String segundoJefe;
+    private LocalDate fechaCreacion;
 }
+
