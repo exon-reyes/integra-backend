@@ -1,118 +1,199 @@
+# ============================================================
+# CONFIGURACIÓN GENERAL DE SPRING
+# ============================================================
 spring:
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN DE TAREAS PROGRAMADAS (SCHEDULER)
+  # ------------------------------------------------------------
+  task:
+    scheduling:
+      pool:
+        size: 10   # Número de hilos disponibles para tareas @Scheduled
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN DE CARGA DE ARCHIVOS (MULTIPART)
+  # ------------------------------------------------------------
   servlet:
     multipart:
       enabled: true
-      max-file-size: 1GB       # Tamaño máximo por archivo
-      max-request-size: 1GB    # Tamaño máximo de toda la petición (archivos + campos)
+      max-file-size: 1GB        # Tamaño máximo permitido por archivo
+      max-request-size: 1GB     # Tamaño máximo total por request
+
+  # ------------------------------------------------------------
+  # IMPORTACIÓN DE CONFIGURACIÓN EXTERNA
+  # ------------------------------------------------------------
   config:
     import: classpath:app-config.yml
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN DE SERIALIZACIÓN JSON
+  # ------------------------------------------------------------
   jackson:
     time-zone: America/Mexico_City
-    default-property-inclusion: non_null
-  #    serialization:
-  #      write-null-map-values: false
+    default-property-inclusion: non_null   # No incluir propiedades null
+    # serialization:
+    #   write-null-map-values: false
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN DE BASE DE DATOS (MARIADB + HIKARI)
+  # ------------------------------------------------------------
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/comialex?useSSL=false
     username: root
     password: nova1912
+
     hikari:
-      maximum-pool-size: 30
-      connection-timeout: 60000  # 60 segundos
-      idle-timeout: 600000       # 10 minutos
+      maximum-pool-size: 40    # Máximo de conexiones simultáneas
+      minimum-idle: 10         # Conexiones mínimas ociosas
+      connection-timeout: 15000  # Tiempo máximo para obtener conexión (ms)
+      idle-timeout: 300000       # Tiempo antes de cerrar conexión ociosa (ms)
+      max-lifetime: 600000       # Vida máxima de conexión (ms)
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN JPA / HIBERNATE
+  # ------------------------------------------------------------
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: none   # No modificar esquema automáticamente
 
     properties:
       hibernate:
         default_schema: comialex
-    #        format_sql: true
-    #    show-sql: true
-    open-in-view: false
 
+    open-in-view: false  # Evita mantener sesión abierta en capa web
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN DE CORREO SMTP
+  # ------------------------------------------------------------
   mail:
-    host: smtp.gmail.com        # o el host SMTP de tu proveedor
-    port: 587                   # puerto SMTP (587 para STARTTLS)
+    host: smtp.gmail.com
+    port: 587
     protocol: smtp
     username: sci.integra@gmail.com
     password: vnvl uneh olrb lbed
+
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-          # opcional: timeouts (recomendado en producción)
+
+          # Timeouts recomendados en producción
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000
+
+  # ------------------------------------------------------------
+  # METADATOS DE LA APLICACIÓN
+  # ------------------------------------------------------------
   application:
     name: integra
+
+
+# ============================================================
+# CONFIGURACIÓN DE ACTUATOR / MÉTRICAS
+# ============================================================
 management:
+
   endpoints:
     web:
       exposure:
         include: health,metrics,prometheus,caches
       base-path: /actuator
+
   metrics:
     enable:
       cache: true
     tags:
       application: ${spring.application.name}
       environment: ${spring.profiles.active}
+
   endpoint:
     prometheus:
       enabled: true
     health:
       show-details: always
-application: { title: Integra,
-               version: 1.0.1-Beta,
-               api_name: integra,
-               dev: "Pablo Reyes",
-               description: "Servidor de aplicación backend Integra",
-               derechos: "Integra 2025 Pablo Reyes Lorenzo. Sin licencia comercial asignada a la sig. instancia. Uso bajo consentimiento del propietario ." }
 
 
+# ============================================================
+# METADATOS PERSONALIZADOS DE LA APP
+# ============================================================
+application:
+  title: Integra
+  version: 1.0.1-Beta
+  api_name: integra
+  dev: "Pablo Reyes"
+  description: "Servidor de aplicación backend Integra"
+  derechos: "Integra 2025 Pablo Reyes Lorenzo. Sin licencia comercial asignada a la sig. instancia. Uso bajo consentimiento del propietario ."
+
+
+# ============================================================
+# CONFIGURACIÓN EXTERNA (API / INTEGRACIONES)
+# ============================================================
 openrouter:
   api-key: AIzaSyA4dIEaPCnPtgMtD_cBDvapiAh5aG2X-NU
+
+
+# ============================================================
+# SEGURIDAD - JWT
+# ============================================================
 security:
   jwt:
     private-key: classpath:certs/private.pem
     public-key: classpath:certs/public.pem
-    expiration-minutes: 43200   # <--- 30 días en minutos
-    refresh-expiration: 2592000 # 30 días en segundos
+
+    expiration-minutes: 43200   # 30 días en minutos
     expiration: 2592000         # 30 días en segundos
+    refresh-expiration: 2592000 # 30 días en segundos
+
+
+# ============================================================
+# CONFIGURACIÓN DEL SERVIDOR (TOMCAT EMBEBIDO)
+# ============================================================
 server:
-  error:
-  #    include-stacktrace: on_param
+
   port: 8081
   address: 0.0.0.0
+
+  servlet:
+    context-path: /comialex/api/${application.api_name}
+
   compression:
     enabled: true
     mime-types: text/html,text/css,text/plain,text/xml,application/javascript,application/json
-  servlet:
-    context-path: /comialex/api/${application.api_name}
-    session:
-      timeout: 21600s
+
+  tomcat:
+    threads:
+      min-spare: 15
+      max: 100   # Máximo de hilos del servidor
+
+  error:
+  # include-stacktrace: on_param
 
 
+# ============================================================
+# CONFIGURACIÓN DE LOGGING
+# ============================================================
 logging:
+
   level:
     root: INFO
 
-    # Tu dominio
+    # Dominio de aplicación
     integra: INFO
     integra.config.cache.CacheConfig: INFO
     integra.config.cache.CacheService: INFO
     integra.config.cache.CustomCacheErrorHandler: WARN
 
-    # Hibernate (CRÍTICO en prod)
+    # Hibernate (optimizado para producción)
     org.hibernate.SQL: WARN
     org.hibernate.orm.jdbc.bind: OFF
     org.hibernate.type.descriptor.sql: OFF
 
-    # Spring interno (reducir ruido)
+    # Reducir ruido de Spring
     org.springframework: WARN
     org.springframework.web: WARN
 
@@ -134,47 +215,65 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n%throwable{5}"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n%throwable"
 
+
+# ============================================================
+# CONFIGURACIÓN PERSONALIZADA DE LA APP (INTEGRA)
+# ============================================================
 integra:
+
+  # ------------------------------------------------------------
+  # SINCRONIZACIÓN DE USUARIOS
+  # ------------------------------------------------------------
   sync:
     usuarios:
       output-dir: ./integra-config/sync-usuarios/
+
+  # ------------------------------------------------------------
+  # CONFIGURACIÓN DE CACHE (CAFFEINE)
+  # ------------------------------------------------------------
   cache:
     specs:
+
       unidadContacto:
         expireAfterWrite: 28d
         expireAfterAccess: 7d
         maximumSize: 2000
         recordStats: true
         initialCapacity: 50
+
       unidadBuscar:
         expireAfterWrite: 1h
         expireAfterAccess: 30m
         maximumSize: 1000
         recordStats: true
         initialCapacity: 100
+
       rolesPermisos:
         expireAfterWrite: 28d
         maximumSize: 100
         recordStats: true
         initialCapacity: 30
+
       rolPorId:
         expireAfterWrite: 28d
         maximumSize: 100
         recordStats: true
         initialCapacity: 30
+
       empleadoPorId:
         expireAfterWrite: 1h
         maximumSize: 5000
         recordStats: true
         initialCapacity: 200
+
       empleadoPorNip:
-        expireAfterWrite: 7d        # Expira después de 7 días (más tiempo en producción)
-        expireAfterAccess: 24h      # Renueva si se accede en 24 horas
-        maximumSize: 5000           # Máximo 5000 empleados en caché
-        recordStats: true           # Habilitar métricas
-        initialCapacity: 590        # Capacidad inicial
+        expireAfterWrite: 7d
+        expireAfterAccess: 24h
+        maximumSize: 5000
+        recordStats: true
+        initialCapacity: 590
+
       parametros:
         expireAfterWrite: 1h
         maximumSize: 100
         recordStats: true
-
