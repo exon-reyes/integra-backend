@@ -8,6 +8,7 @@ public interface InfoLoginEmpleado {
     String getCodigo_empleado();
 
     Integer getEstatus_empleado();
+    String getAvatar();
 
     String getNombre_completo();
 

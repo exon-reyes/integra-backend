@@ -2,8 +2,6 @@ package integra.empresa.repository;
 
 import integra.empresa.entity.UnidadEntity;
 import integra.empresa.query.unidad.InfoUnidad;
-import integra.empresa.repository.UnidadQueryRepository;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;

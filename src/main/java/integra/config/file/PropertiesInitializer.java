@@ -38,6 +38,8 @@ public class PropertiesInitializer implements ApplicationRunner {
             writer.write("# Configuración de corte de jornadas predeterminadas\n\n");
             writer.write("jornada.corte.nocturno=0\n");
             writer.write("jornada.corte.normal=0\n");
+            writer.write("\n# Sincronización de períodos vacacionales\n");
+            writer.write("vacaciones.sincronizacion.ultima=\n");
             log.info("Archivo business.properties creado con config. predeterminada creado con éxito");
         }
     }

@@ -11,6 +11,7 @@
 
 ## Architecture
 - Clean Architecture
+- SOLID
 - Controllers -> Services -> Repositories
 - DTOs obligatorios
 - No lógica de negocio en controllers
@@ -47,6 +48,9 @@
 ## Security
 - Validar DTOs con Validation (@Valid) en el Controller.
 - No exponer entidades directamente.
+
+## Exception Handling
+- Utiliza la estadarización de excepciones implementada en el proyecto(ref: llm exception.md)
 
 ## Spring Data JPA Guidelines
 

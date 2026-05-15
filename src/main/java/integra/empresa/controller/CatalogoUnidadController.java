@@ -2,7 +2,6 @@ package integra.empresa.controller;
 
 import integra.acceso.util.Autoridades;
 import integra.empresa.query.unidad.FiltroUnidad;
-import integra.empresa.query.unidad.InfoUnidad;
 import integra.empresa.service.unidad.UnidadQueryService;
 import integra.model.HorarioOperativo;
 import integra.model.Unidad;

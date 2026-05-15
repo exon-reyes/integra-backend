@@ -42,3 +42,11 @@ mvnw.cmd
 /src/main/resources/jwt-public.key
 /src/main/resources/certs/
 /src/test/
+/database/
+/devops-expert/
+/documentacion/
+/.idea/
+/.mvn/
+/.settings/
+/.vscode/
+/avatar/

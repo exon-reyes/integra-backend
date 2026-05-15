@@ -1,0 +1,36 @@
+
+---- DESINSTALAR CLOUDFLARE -----
+Detener el servicio: net stop cloudflared
+Desinstalar el servicio: cloudflared service uninstall
+
+
+
+----- INSTALAR CLOUDFLARED COMO SERVICIO EN WINDOWS -----
+cloudflared --config "C:\cloudflared\config.yml" service install
+
+
+----- MATAR EL SERVICIO COLGADO --------
+
+OBtener el PID del proceso: sc queryex cloudflared
+
+    Ejemplo:
+          C:\Users\CAMARAS06>sc queryex cloudflared
+
+          NOMBRE_SERVICIO: cloudflared
+                  TIPO               : 10  WIN32_OWN_PROCESS
+                  ESTADO             : 3  STOP_PENDING
+                                          (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+                  CÓD_SALIDA_WIN32   : 0  (0x0)
+                  CÓD_SALIDA_SERVICIO: 0  (0x0)
+                  PUNTO_COMPROB.     : 0x0
+                  INDICACIÓN_INICIO  : 0x0
+                  PID                : 4056
+                  MARCAS         :
+
+taskkill /F /PID 18108
+
+
+-----  REINICIAR COMPLETAMENTE EL SERVICIO DE CLOUDFLARED
+net stop cloudflared
+taskkill /F /IM cloudflared.exe
+net start cloudflared

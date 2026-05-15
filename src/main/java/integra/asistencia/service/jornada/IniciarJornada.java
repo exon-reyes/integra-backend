@@ -6,7 +6,7 @@ import integra.asistencia.entity.TipoIncidencia;
 import integra.asistencia.exception.AsistenciaDomainException;
 import integra.asistencia.repository.AsistenciaRepository;
 import integra.asistencia.service.UnidadVerificadorService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.asistencia.util.HandlerExecutor;
 import integra.empleado.entity.EmpleadoEntity;
 import org.springframework.stereotype.Service;
@@ -23,14 +23,17 @@ public class IniciarJornada extends BaseAsistenciaService implements HandlerExec
     private final AsistenciaRepository asistenciaRepository;
     private final UnidadVerificadorService unidadVerificadorService;
 
-    public IniciarJornada(WorkTimeImageService workTimeImageService, AsistenciaRepository asistenciaRepository, UnidadVerificadorService unidadVerificadorService) {
-        super(workTimeImageService);
+    public IniciarJornada(WorkImageService workImageService, AsistenciaRepository asistenciaRepository, UnidadVerificadorService unidadVerificadorService) {
+        super(workImageService);
         this.asistenciaRepository = asistenciaRepository;
         this.unidadVerificadorService = unidadVerificadorService;
     }
 
     @Override
     public Void execute(IniciarJornadaCommand command) {
+        if (esReintentoInicioReciente(command.empleadoId())) {
+            return null; // Reintento absorbido silenciosamente por tolerancia de red
+        }
         validarNoExisteJornadaActiva(command.empleadoId());
         String pathFoto = guardarFotoSiExiste(command.foto(), command.empleadoId());
 
@@ -50,6 +53,18 @@ public class IniciarJornada extends BaseAsistenciaService implements HandlerExec
         if (jornadaActiva.isPresent()) {
             throw AsistenciaDomainException.duplicateEntry(empleadoId.longValue(), LocalDate.now().toString());
         }
+    }
+
+    private boolean esReintentoInicioReciente(Integer empleadoId) {
+        Optional<AsistenciaModel> ultimaJornada = asistenciaRepository.findFirstByEmpleado_IdOrderByInicioJornadaDesc(empleadoId);
+        if (ultimaJornada.isPresent()) {
+            AsistenciaModel j = ultimaJornada.get();
+            // Si la última jornada no está cerrada y se inició hace menos de 5 minutos, se considera reintento
+            if (Boolean.FALSE.equals(j.getJornadaCerrada()) && j.getInicioJornada() != null) {
+                return j.getInicioJornada().isAfter(LocalDateTime.now().minusMinutes(5));
+            }
+        }
+        return false;
     }
 
 

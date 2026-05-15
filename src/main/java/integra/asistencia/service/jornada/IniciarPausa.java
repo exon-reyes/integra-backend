@@ -9,7 +9,7 @@ import integra.asistencia.repository.AsistenciaRepository;
 import integra.asistencia.repository.PausaModelRepository;
 import integra.asistencia.service.UnidadVerificadorService;
 import integra.asistencia.service.ValidarRegistrarPausaService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.asistencia.util.HandlerExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +25,8 @@ public class IniciarPausa extends BaseAsistenciaService implements HandlerExecut
     private final PausaModelRepository pausaRepository;
     private final UnidadVerificadorService unidadVerificadorService;
 
-    public IniciarPausa(WorkTimeImageService workTimeImageService, ValidarRegistrarPausaService validarRegistrarPausaService, AsistenciaRepository asistenciaRepository, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService) {
-        super(workTimeImageService);
+    public IniciarPausa(WorkImageService workImageService, ValidarRegistrarPausaService validarRegistrarPausaService, AsistenciaRepository asistenciaRepository, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService) {
+        super(workImageService);
         this.validarRegistrarPausaService = validarRegistrarPausaService;
         this.asistenciaRepository = asistenciaRepository;
         this.pausaRepository = pausaRepository;

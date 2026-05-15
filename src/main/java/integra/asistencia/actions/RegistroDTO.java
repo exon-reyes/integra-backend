@@ -13,7 +13,6 @@ public class RegistroDTO {
     private TipoPausa pausa;
     @NotNull(message = "El ID del empleado no puede ser nulo")
     private Integer empleadoId;
-    private String foto;
     private Integer unidadAsignadaId;
     private Boolean finDeposito;
     private LocalTime hora;

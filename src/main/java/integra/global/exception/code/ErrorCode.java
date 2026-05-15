@@ -148,9 +148,31 @@ public enum ErrorCode {
     ASI_INVALID_TIME("ASI-003", "Hora de registro inválida", 400),
     ASI_OUTSIDE_SCHEDULE("ASI-004", "Registro fuera del horario permitido", 409),
     ASI_KIOSCO_NOT_CONFIGURED("ASI-005", "Kiosco no configurado", 400),
-    ASI_KIOSCO_INVALID_PIN("ASI-006", "PIN de kiosco inválido", 401),
-    ASI_KIOSCO_BLOCKED("ASI-007", "Kiosco bloqueado", 403);
+    ASI_KIOSCO_INVALID_PIN("ASI-006", "PIN de kiosco inválido", 404),
+    ASI_KIOSCO_BLOCKED("ASI-007", "Kiosco bloqueado", 403),
 
+    // ============================================================================
+    // ERRORES DE VACACIONES (VAC)
+    // ============================================================================
+    VAC_ANTIGUEDAD_INSUFICIENTE("VAC-001", "Antigüedad mínima no cumplida", 400),
+    VAC_SALDO_INSUFICIENTE("VAC-002", "Saldo de vacaciones insuficiente", 400),
+    VAC_PERIODO_VEDA("VAC-003", "Período de veda activo", 400),
+    VAC_PLAZO_VENCIDO("VAC-004", "Plazo legal de 6 meses vencido", 400),
+    VAC_TRASLAPE("VAC-005", "Violación de regla de traslape", 409),
+    VAC_SOLICITUD_NO_ENCONTRADA("VAC-006", "Solicitud no encontrada", 404),
+    VAC_ESTADO_INVALIDO("VAC-007", "Estado de solicitud inválido para esta operación", 409),
+    VAC_SIN_PERIODO("VAC-008", "No existe período vacacional activo", 400),
+    VAC_FESTIVO_DUPLICADO("VAC-009", "Fecha festiva duplicada", 409),
+    VAC_EMPLEADO_NO_ENCONTRADO("VAC-010", "Empleado no encontrado", 404),
+    VAC_SIN_PERMISOS("VAC-011", "Sin permisos para realizar esta operación", 403),
+    VAC_FECHA_INVALIDA("VAC-012", "Rango de fechas inválido", 400),
+    VAC_GESTOR_NO_ENCONTRADO("VAC-013", "Gestor/Aprobador no encontrado", 404),
+    VAC_PERIODO_NO_ENCONTRADO("VAC-014", "Período vacacional no encontrado", 404),
+    VAC_ERROR_TECNICO("VAC-015", "Error técnico al procesar la solicitud", 500),
+    VAC_DESCANSOS_NO_CONFIGURADOS("VAC-016", "Días de descanso no configurados", 400),
+    VAC_REACTIVACION_RECHAZADA("VAC-017","No se puede reactivar la solicitud",400),
+    VAC_FOLIO_NO_ENCONTRADO("VAC-018", "Folio de solicitud no encontrado", 404),
+    VAC_POLITICA_NO_ENCONTRADA("VAC-019", "No se encontró política de vacaciones vigente", 404);
     private final String code;
     private final String title;
     private final int httpStatus;

@@ -5,8 +5,10 @@ import integra.asistencia.service.jornada.*;
 import integra.utils.ResponseData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/asistencia")
@@ -24,31 +26,39 @@ public class AsistenciaCommandController {
     private final CrearJornadaCompleta crearJornadaCompleta;
     private final CrearPausaCompleta crearPausaCompleta;
 
-    @PostMapping("iniciar")
-    public ResponseEntity<ResponseData<?>> iniciar(@Valid @RequestBody RegistroDTO dto) {
-        iniciarJornada.execute(new IniciarJornadaCommand(dto.getEmpleadoId(), dto.getFoto(),
+    @PostMapping(value = "iniciar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseData<?>> iniciar(
+            @RequestPart("datos") @Valid RegistroDTO dto,
+            @RequestPart(value = "foto", required = false) MultipartFile foto) {
+        iniciarJornada.execute(new IniciarJornadaCommand(dto.getEmpleadoId(), foto,
                 dto.getUnidadId(), dto.getUnidadAsignadaId(), dto.getHora()));
         return success("Jornada iniciada");
     }
 
-    @PostMapping("/finalizar")
-    public ResponseEntity<ResponseData<?>> finalizar(@Valid @RequestBody RegistroDTO dto) {
-        finalizarJornada.execute(new FinalizarJornadaCommand(dto.getEmpleadoId(), dto.getFoto(),
+    @PostMapping(value = "/finalizar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseData<?>> finalizar(
+            @RequestPart("datos") @Valid RegistroDTO dto,
+            @RequestPart(value = "foto", required = false) MultipartFile foto) {
+        finalizarJornada.execute(new FinalizarJornadaCommand(dto.getEmpleadoId(), foto,
                 dto.getUnidadId(), dto.getFinDeposito(), dto.getUnidadAsignadaId(), null));
         return success("Jornada finalizada");
     }
 
-    @PostMapping("/pausa/iniciar")
-    public ResponseEntity<ResponseData<?>> iniciarPausa(@Valid @RequestBody RegistroDTO dto) {
+    @PostMapping(value = "/pausa/iniciar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseData<?>> iniciarPausa(
+            @RequestPart("datos") @Valid RegistroDTO dto,
+            @RequestPart(value = "foto", required = false) MultipartFile foto) {
         iniciarPausa.execute(new IniciarPausaCommand(dto.getEmpleadoId(), dto.getPausa(),
-                dto.getFoto(), dto.getUnidadId(), dto.getUnidadAsignadaId(), null));
+                foto, dto.getUnidadId(), dto.getUnidadAsignadaId(), null));
         return success("Pausa iniciada");
     }
 
-    @PostMapping("/pausa/finalizar")
-    public ResponseEntity<ResponseData<?>> finalizarPausa(@Valid @RequestBody RegistroDTO dto) {
+    @PostMapping(value = "/pausa/finalizar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseData<?>> finalizarPausa(
+            @RequestPart("datos") @Valid RegistroDTO dto,
+            @RequestPart(value = "foto", required = false) MultipartFile foto) {
         finalizarPausa.execute(new FinalizarPausaCommand(dto.getEmpleadoId(), dto.getPausa(),
-                dto.getFoto(), dto.getUnidadId(), dto.getUnidadAsignadaId(), null));
+                foto, dto.getUnidadId(), dto.getUnidadAsignadaId(), null));
         return success("Pausa registrada");
     }
 

@@ -1,7 +1,7 @@
 package integra.observacion.service;
 
-import integra.observacion.exception.ObservacionException;
 import integra.observacion.ObservacionRepository;
+import integra.observacion.exception.ObservacionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

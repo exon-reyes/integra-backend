@@ -33,26 +33,33 @@ public class ConsultarCatalogoEmpleados {
         empleado.setFechaReingreso(data.getFechaReingreso());
         empleado.setSexo(data.getSexo());
         empleado.setContacto(new Contacto(data.getTelefono(), data.getEmail()));
+        empleado.setAvatar(data.getPathAvatar());
 
         var dataDepartamento = data.getDepartamento();
         if (dataDepartamento != null) {
             empleado.setDepartamento(new Departamento(dataDepartamento.getId(), dataDepartamento.getNombre()));
         }
-        data.getVinculacionGestions()
-                .forEach(gestor -> empleado.setGestor(new Gestor(gestor.getId(), gestor.getGestor()
-                        .getNombreCompleto(), gestor.getNivelAutoridad(), gestor.getTipoProceso().getDescripcion())));
+        empleado.setPrimerJefe(new Gestor(data.getJefe().getId(), data.getJefe().getNombreCompleto(), 1));
+        empleado.setSegundoJefe(new Gestor(data.getSegundoJefe().getId(), data.getSegundoJefe()
+                .getNombreCompleto(), 2));
         return empleado;
     }
 
-    public List<Empleado> consultarConFiltro(FiltroEmpleado filtros) {
+    public List<Empleado> consultar(FiltroEmpleado filtros) {
         return filtroEmpleadoService.obtenerConFiltro(filtros).stream().map(this::mapToEmpleado).toList();
     }
+
+//    public Empleado obtenerEmpleado(Integer id) {
+//        return empleadoRepository.findById(id, InfoCatalogoEmpleados.class)
+//                .map(this::mapToEmpleado)
+//                .orElseThrow(() -> EmpleadoException.notFound(Long.valueOf(id)));
+//    }
 
     public List<Empleado> obtenerSupervisores(Boolean activos) {
         FiltroEmpleado filtro = new FiltroEmpleado();
         filtro.setIdPuesto(systemIdProvider.getIdPuestoSupervisor());
         filtro.setActivos(activos);
-        return consultarConFiltro(filtro);
+        return consultar(filtro);
     }
 
     private Empleado mapToEmpleado(InfoCatalogoEmpleados data) {
