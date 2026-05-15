@@ -1,5 +1,6 @@
 package integra.model;
 
+import integra.vacacion.dto.response.PeriodoVacacional;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ public class Empleado {
     private String nombreCompleto;
     private Puesto puesto;
     private Unidad unidad;
+    private String avatar;
     private LocalDate fechaAlta;
     private LocalDate fechaBaja;
     private LocalDate fechaReingreso;
@@ -26,6 +28,15 @@ public class Empleado {
     private Contacto contacto;
     private String sexo;
     private List<Gestor> gestores;
+    private Integer antiguedadAnios;
+    private Gestor primerJefe;
+    private Gestor segundoJefe;
+    private LocalDate fechaIngreso;
+    private PeriodoVacacional periodoVacacional;
+
+    public Empleado(Integer id) {
+        this.id = id;
+    }
 
     public Empleado(Integer id, String codigo, String nombreCompleto) {
         this.id = id;
@@ -50,6 +61,8 @@ public class Empleado {
         this.apellidoMaterno = apellidoMaterno;
     }
 
+
+
     public void setNombre(String nombre, String apellidoPaterno, String apellidoMaterno) {
         this.nombre = nombre;
         this.apellidoPaterno = apellidoPaterno;
@@ -57,8 +70,7 @@ public class Empleado {
     }
 
     public void setGestor(Gestor gestor) {
-        if (this.gestores == null)
-            this.gestores = new ArrayList<>();
+        if (this.gestores == null) this.gestores = new ArrayList<>();
         this.gestores.add(gestor);
     }
 

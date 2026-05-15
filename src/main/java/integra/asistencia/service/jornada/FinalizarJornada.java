@@ -12,7 +12,7 @@ import integra.asistencia.repository.CompensacionRepository;
 import integra.asistencia.repository.EmpleadoPuestoService;
 import integra.asistencia.repository.PausaModelRepository;
 import integra.asistencia.service.UnidadVerificadorService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.asistencia.util.CalculadoraJornada;
 import integra.asistencia.util.HandlerExecutor;
 import integra.empresa.repository.UnidadRepository;
@@ -39,8 +39,8 @@ public class FinalizarJornada extends BaseAsistenciaService implements HandlerEx
     private final CompensacionDepositoService compensacionDepositoService;
     private final EmpleadoPuestoService empleadoPuestoService;
 
-    public FinalizarJornada(WorkTimeImageService workTimeImageService, AsistenciaRepository asistenciaRepository, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService, UnidadRepository unidadRepository, CompensacionRepository compensacionRepository, CompensacionDepositoService compensacionDepositoService, EmpleadoPuestoService empleadoPuestoService) {
-        super(workTimeImageService);
+    public FinalizarJornada(WorkImageService workImageService, AsistenciaRepository asistenciaRepository, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService, UnidadRepository unidadRepository, CompensacionRepository compensacionRepository, CompensacionDepositoService compensacionDepositoService, EmpleadoPuestoService empleadoPuestoService) {
+        super(workImageService);
         this.asistenciaRepository = asistenciaRepository;
         this.pausaRepository = pausaRepository;
         this.unidadVerificadorService = unidadVerificadorService;
@@ -50,12 +50,31 @@ public class FinalizarJornada extends BaseAsistenciaService implements HandlerEx
         this.empleadoPuestoService = empleadoPuestoService;
     }
 
+    /**
+     * El guardado de foto ocurre fuera de @Transactional para no retener
+     * la conexión de BD durante I/O de disco.
+     */
     @Override
     public Void execute(FinalizarJornadaCommand command) {
         String pathFoto = guardarFotoSiExiste(command.foto(), command.empleadoId());
-        boolean incidenciaUnidad = hayIncidenciaUnidad(command);
+        procesarFinalizacion(command, pathFoto);
+        return null;
+    }
 
-        AsistenciaModel asistencia = obtenerJornadaActiva(command.empleadoId());
+    @Transactional
+    public void procesarFinalizacion(FinalizarJornadaCommand command, String pathFoto) {
+        AsistenciaModel asistencia = asistenciaRepository
+                .findFirstByEmpleado_IdAndJornadaCerradaFalseOrderByInicioJornadaDesc(command.empleadoId())
+                .orElse(null);
+
+        if (asistencia == null) {
+            if (!esReintentoCierreReciente(command.empleadoId())) {
+                throw AsistenciaDomainException.notFound(Long.valueOf(command.empleadoId()));
+            }
+            return;
+        }
+
+        boolean incidenciaUnidad = hayIncidenciaUnidad(command);
 
         cerrarPausaActivaSiExiste(command.empleadoId());
         actualizarInconsistencia(asistencia, incidenciaUnidad);
@@ -77,7 +96,6 @@ public class FinalizarJornada extends BaseAsistenciaService implements HandlerEx
         if (incidenciaUnidad) {
             registrarIncidencia(asistencia, command, pathFoto);
         }
-        return null;
     }
 
     private boolean hayIncidenciaUnidad(FinalizarJornadaCommand command) {
@@ -87,6 +105,18 @@ public class FinalizarJornada extends BaseAsistenciaService implements HandlerEx
     private AsistenciaModel obtenerJornadaActiva(Integer empleadoId) {
         return asistenciaRepository.findFirstByEmpleado_IdAndJornadaCerradaFalseOrderByInicioJornadaDesc(empleadoId)
                 .orElseThrow(() -> AsistenciaDomainException.notFound(Long.valueOf(empleadoId)));
+    }
+
+    private boolean esReintentoCierreReciente(Integer empleadoId) {
+        Optional<AsistenciaModel> ultimaJornada = asistenciaRepository.findFirstByEmpleado_IdOrderByInicioJornadaDesc(empleadoId);
+        if (ultimaJornada.isPresent()) {
+            AsistenciaModel j = ultimaJornada.get();
+            // Si está cerrada y su hora de cierre fue hace menos de 5 minutos, se considera reintento
+            if (Boolean.TRUE.equals(j.getJornadaCerrada()) && j.getFinJornada() != null) {
+                return j.getFinJornada().isAfter(LocalDateTime.now().minusMinutes(5));
+            }
+        }
+        return false;
     }
 
     private void cerrarPausaActivaSiExiste(Integer empleadoId) {

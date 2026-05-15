@@ -1,17 +1,14 @@
 package integra.operatividad.controller;
 
 import integra.model.Operatividad;
+import integra.operatividad.dto.GuardarHorariosRequest;
 import integra.operatividad.service.OperatividadService;
 import integra.utils.ResponseData;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import integra.operatividad.dto.GuardarHorariosRequest;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController

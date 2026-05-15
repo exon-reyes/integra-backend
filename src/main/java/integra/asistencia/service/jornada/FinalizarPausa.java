@@ -8,7 +8,7 @@ import integra.asistencia.entity.TipoIncidencia;
 import integra.asistencia.exception.AsistenciaDomainException;
 import integra.asistencia.repository.PausaModelRepository;
 import integra.asistencia.service.UnidadVerificadorService;
-import integra.asistencia.service.WorkTimeImageService;
+import integra.asistencia.service.WorkImageService;
 import integra.asistencia.util.HandlerExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +22,8 @@ public class FinalizarPausa extends BaseAsistenciaService implements HandlerExec
     private final PausaModelRepository pausaRepository;
     private final UnidadVerificadorService unidadVerificadorService;
 
-    public FinalizarPausa(WorkTimeImageService workTimeImageService, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService) {
-        super(workTimeImageService);
+    public FinalizarPausa(WorkImageService workImageService, PausaModelRepository pausaRepository, UnidadVerificadorService unidadVerificadorService) {
+        super(workImageService);
         this.pausaRepository = pausaRepository;
         this.unidadVerificadorService = unidadVerificadorService;
     }

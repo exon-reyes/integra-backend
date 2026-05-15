@@ -28,6 +28,16 @@ public interface AsistenciaRepository
     Optional<AsistenciaModel> findFirstByEmpleado_IdAndJornadaCerradaFalseOrderByInicioJornadaDesc(Integer id);
 
     /**
+     * Busca la última asistencia registrada de un empleado específico,
+     * sin importar si la jornada está cerrada o no,
+     * ordenada por inicio de jornada en orden descendente.
+     *
+     * @param id el identificador del empleado
+     * @return un Optional que contiene la última asistencia
+     */
+    Optional<AsistenciaModel> findFirstByEmpleado_IdOrderByInicioJornadaDesc(Integer id);
+
+    /**
      * Busca todas las asistencias de un empleado específico con jornada no cerrada.
      *
      * @param id el identificador del empleado

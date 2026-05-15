@@ -71,13 +71,15 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 
 - Use strict type checking
 - Prefer type inference when the type is obvious
+- Divide logic in multiple files when it is too complex
+- Haz codigo reutilizable y evita la duplicacion de codigo
 - Avoid the `any` type; use `unknown` when type is uncertain
 
 ### Angular Best Practices
 
-- Always use standalone components over `NgModules`
-- Do NOT set `standalone: true` inside the `@Component`, `@Directive` and `@Pipe` decorators
+- Always use standalone components over `NgModules` decorators
 - Use signals for state management
+- Singals of Angular 21
 - Implement lazy loading for feature routes
 - Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
 - Use `NgOptimizedImage` for all static images.

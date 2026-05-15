@@ -4,12 +4,12 @@ import integra.asistencia.actions.EmpleadoJornada;
 import integra.asistencia.entity.PausaModel;
 import integra.asistencia.exception.AsistenciaDomainException;
 import integra.asistencia.query.EmpleadoModelInfo;
-import integra.global.exception.code.ErrorCode;
 import integra.asistencia.repository.AsistenciaRepository;
 import integra.asistencia.repository.PausaModelRepository;
 import integra.asistencia.service.EmpleadoPuestoValidatorService;
 import integra.asistencia.util.HandlerExecutor;
-import integra.empleado.service.ConsultarEmpleadoPinService;
+import integra.empleado.service.EmpleadoService;
+import integra.global.exception.code.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ObtenerEmpleadoJornada {
-    private final ConsultarEmpleadoPinService consultarEmpleadoPinService;
+    private final EmpleadoService empleadoService;
     private final AsistenciaRepository asistenciaRepository;
     private final PausaModelRepository pausaRepository;
     private final EmpleadoPuestoValidatorService empleadoPuestoRepositoryImpl;
@@ -48,7 +48,7 @@ public class ObtenerEmpleadoJornada {
      * @see AsistenciaDomainException
      */
     public EmpleadoJornada execute(String pin) {
-        EmpleadoModelInfo data = consultarEmpleadoPinService.execute(pin, EmpleadoModelInfo.class)
+        EmpleadoModelInfo data = empleadoService.execute(pin, EmpleadoModelInfo.class)
                 .orElseThrow(AsistenciaDomainException::invalidPin);
         return procesarEmpleado(data);
 
@@ -74,7 +74,7 @@ public class ObtenerEmpleadoJornada {
     }
 
     public EmpleadoJornada obtenerPorId(Integer id) {
-        EmpleadoModelInfo data = consultarEmpleadoPinService.obtenerPorId(id, EmpleadoModelInfo.class)
+        EmpleadoModelInfo data = empleadoService.obtenerPorId(id, EmpleadoModelInfo.class)
                 .orElseThrow(() -> AsistenciaDomainException.notFound(id.longValue()));
         return procesarEmpleado(data);
     }

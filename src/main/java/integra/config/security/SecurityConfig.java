@@ -58,13 +58,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 🔓 Endpoints públicos
                         .requestMatchers("/auth/login", "/auth/refresh", "/auth/forgot-password",
-                                "/auth/validate-reset-token", "/auth/reset-password", "/auth/register-request", "/auth/validate-registration-token", "/auth/register-confirm", "/auth/public/**")
+                                "/auth/validate-reset-token", "/auth/reset-password", "/auth/register-request",
+                                "/auth/validate-registration-token", "/auth/register-confirm", "/auth/public/**")
                         .permitAll()
                         .requestMatchers("/estados/**")
                         .permitAll()
                         .requestMatchers("/asistencia/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/unidades/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/empleados/*/avatar/imagen")
                         .permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
                         .permitAll()
