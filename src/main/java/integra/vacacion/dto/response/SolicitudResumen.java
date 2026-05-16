@@ -15,6 +15,7 @@ public record SolicitudResumen(
         Integer empleadoId,
         String empleadoCodigo,
         String empleadoNombre,
+        String puestoNombre,
         String unidadNombre,
         String primerJefeNombre,
         String segundoJefeNombre,

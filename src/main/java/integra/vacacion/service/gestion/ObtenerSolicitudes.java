@@ -93,6 +93,7 @@ public class ObtenerSolicitudes {
         Join<EmpleadoEntity, UnidadEntity> unidad = emp.join("unidad", JoinType.LEFT);
         Join<EmpleadoEntity, EmpleadoEntity> jefe = emp.join("jefe", JoinType.LEFT);
         Join<EmpleadoEntity, EmpleadoEntity> segundoJefe = emp.join("segundoJefe", JoinType.LEFT);
+        Join<EmpleadoEntity, ?> puesto = emp.join("puesto", JoinType.LEFT);
 
         query.select(cb.construct(
                 SolicitudResumen.class,
@@ -106,6 +107,7 @@ public class ObtenerSolicitudes {
                 emp.get("id"),
                 emp.get("codigoEmpleado"),
                 emp.get("nombreCompleto"),
+                puesto.get("nombre"),
                 unidad.get("nombreCompleto"),
                 jefe.get("nombreCompleto"),
                 segundoJefe.get("nombreCompleto"),

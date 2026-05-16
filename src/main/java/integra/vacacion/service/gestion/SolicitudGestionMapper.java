@@ -29,7 +29,11 @@ public final class SolicitudGestionMapper {
         dto.setFechaCreacion(r.fechaCreacion());
 
         if (r.empleadoId() != null) {
-            dto.setColaborador(new Empleado(r.empleadoId(), r.empleadoCodigo(), r.empleadoNombre()));
+            Empleado colaborador = new Empleado(r.empleadoId(), r.empleadoCodigo(), r.empleadoNombre());
+            if (r.puestoNombre() != null) {
+                colaborador.setPuesto(new integra.model.Puesto(r.puestoNombre()));
+            }
+            dto.setColaborador(colaborador);
             dto.setUnidad(r.unidadNombre());
         }
 
