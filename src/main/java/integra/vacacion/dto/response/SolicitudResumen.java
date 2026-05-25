@@ -11,7 +11,6 @@ public record SolicitudResumen(
         EstatusSolicitud estatusGeneral,
         EstatusSolicitud estatusNivel1,
         EstatusSolicitud estatusNivel2,
-        Integer diasSolicitados,
         Integer empleadoId,
         String empleadoCodigo,
         String empleadoNombre,

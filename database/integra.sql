@@ -1,17 +1,17 @@
 /*
  Navicat Premium Dump SQL
 
- Source Server         : integra
+ Source Server         : Integra Comialex
  Source Server Type    : MariaDB
  Source Server Version : 110803 (11.8.3-MariaDB)
- Source Host           : sci.ddns.me:3306
+ Source Host           : 192.168.1.155:3306
  Source Schema         : comialex
 
  Target Server Type    : MariaDB
  Target Server Version : 110803 (11.8.3-MariaDB)
  File Encoding         : 65001
 
- Date: 15/04/2026 22:15:38
+ Date: 25/05/2026 13:07:43
 */
 
 SET NAMES utf8mb4;
@@ -82,7 +82,7 @@ CREATE TABLE `asistencia`  (
   INDEX `idx_inconistencia_kiosco`(`inconsistencia` ASC) USING BTREE,
   INDEX `idx_empleado_fecha`(`id_empleado` ASC, `fecha` ASC) USING BTREE,
   CONSTRAINT `fk_empleado_asistencia` FOREIGN KEY (`id_empleado`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 5593 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 29000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for auditoria
@@ -152,7 +152,7 @@ CREATE TABLE `compensacion_salida_deposito`  (
   CONSTRAINT `fk_asistencia_compensacion` FOREIGN KEY (`asistencia_id`) REFERENCES `asistencia` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_empleado_deposito` FOREIGN KEY (`empleado_id`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_unidad_deposito` FOREIGN KEY (`unidad_id`) REFERENCES `unidad` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 92 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 284 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for configuracion_tareas
@@ -238,7 +238,7 @@ CREATE TABLE `dias_solicitud_descanso`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_folio_solicitud`(`folio_id` ASC) USING BTREE,
   CONSTRAINT `idx_folio_solicitud` FOREIGN KEY (`folio_id`) REFERENCES `solicitud_descanso` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1128 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for empleado
@@ -277,13 +277,14 @@ CREATE TABLE `empleado`  (
   INDEX `idx_empleado_estatus`(`estatus` ASC) USING BTREE,
   INDEX `idx_jefe_empleado`(`jefe_id` ASC) USING BTREE,
   INDEX `fk_segundo_jefe`(`segundo_jefe_id` ASC) USING BTREE,
+  INDEX `idx_emp_resp`(`estatus` ASC, `jefe_id` ASC) USING BTREE,
   CONSTRAINT `FK_empleado_departamento` FOREIGN KEY (`departamento_id`) REFERENCES `departamento` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `FK_empleado_puesto` FOREIGN KEY (`puesto_id`) REFERENCES `puesto` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `FK_empleado_unidad` FOREIGN KEY (`unidad_id`) REFERENCES `unidad` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `FK_empleado_zona` FOREIGN KEY (`zona_principal_id`) REFERENCES `zona` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `FK_jefe_empleado` FOREIGN KEY (`jefe_id`) REFERENCES `empleado` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_segundo_jefe` FOREIGN KEY (`segundo_jefe_id`) REFERENCES `empleado` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 8407 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8446 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for escalas_vacaciones
@@ -375,7 +376,7 @@ CREATE TABLE `historial_solicitud_descanso`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `fk_solicitud_id`(`solicitud_id` ASC) USING BTREE,
   CONSTRAINT `fk_solicitud_id` FOREIGN KEY (`solicitud_id`) REFERENCES `solicitud_descanso` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 467 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for horario_operativo
@@ -439,7 +440,7 @@ CREATE TABLE `incidencia_kiosco`  (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la incidencia',
   `entidad_id` int(11) NOT NULL COMMENT 'ID de la entidad asociada (asistencia.id o pausa.id)',
   `tipo_incidencia` enum('unidad_incorrecta','fuera_horario') CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL COMMENT 'Tipo de inconsistencia detectada',
-  `mensaje` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Descripción legible para humanos sobre la incidencia',
+  `mensaje` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NULL DEFAULT NULL COMMENT 'Descripción legible para humanos sobre la incidencia',
   `id_esperado` int(11) NULL DEFAULT NULL COMMENT 'Valor correcto esperado según la validación',
   `id_registrado` int(11) NULL DEFAULT NULL COMMENT 'Valor registrado que generó la inconsistencia',
   `empleado_id` int(11) NULL DEFAULT NULL COMMENT 'ID del empleado involucrado en la incidencia',
@@ -449,7 +450,7 @@ CREATE TABLE `incidencia_kiosco`  (
   INDEX `idx_entidad`(`entidad_id` ASC) USING BTREE COMMENT 'Índice compuesto para búsquedas rápidas por tipo de entidad e ID',
   INDEX `idx_tipo`(`tipo_incidencia` ASC) USING BTREE COMMENT 'Índice para filtrar por tipo de inconsistencia',
   INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE COMMENT 'Índice para filtrar/buscar incidencias por empleado'
-) ENGINE = InnoDB AUTO_INCREMENT = 1548 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Tabla que almacena todas las incidencias detectadas en registros de asistencia y pausas, permitiendo la auditoría y análisis de inconsistencias.' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5960 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Tabla que almacena todas las incidencias detectadas en registros de asistencia y pausas, permitiendo la auditoría y análisis de inconsistencias.' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for jornada
@@ -692,7 +693,7 @@ CREATE TABLE `password_reset_tokens`  (
   `created_at` datetime NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_user_token`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 132 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 173 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for pausa
@@ -709,7 +710,7 @@ CREATE TABLE `pausa`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `fk_pausa_asistencia`(`id_asistencia` ASC) USING BTREE,
   CONSTRAINT `fk_pausa_asistencia` FOREIGN KEY (`id_asistencia`) REFERENCES `asistencia` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 1130 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3480 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for periodos_vacacionales
@@ -731,13 +732,14 @@ CREATE TABLE `periodos_vacacionales`  (
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'Fecha de creación del registro',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_empleado_anio`(`empleado_id` ASC, `anio_laboral` ASC) USING BTREE,
+  UNIQUE INDEX `uk_empleado_periodo`(`empleado_id` ASC, `periodo_numero` ASC) USING BTREE,
   INDEX `idx_empleado`(`empleado_id` ASC) USING BTREE,
   INDEX `idx_estatus`(`estatus` ASC) USING BTREE,
   INDEX `idx_caducidad`(`fecha_caducidad` ASC) USING BTREE,
   INDEX `idx_periodo_vigente`(`empleado_id` ASC, `estatus` ASC, `fecha_caducidad` ASC) USING BTREE,
   INDEX `idx_periodo`(`estatus` ASC) USING BTREE,
   CONSTRAINT `fk_empleado_periodo` FOREIGN KEY (`empleado_id`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 310 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Periodos vacacionales acumulados por cada empleado según su antigüedad' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 353 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci COMMENT = 'Periodos vacacionales acumulados por cada empleado según su antigüedad' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for periodos_veda
@@ -786,7 +788,7 @@ CREATE TABLE `puesto`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `nombre`(`nombre` ASC) USING BTREE,
   INDEX `idx_puesto_id_nombre`(`id` ASC, `nombre` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 60 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 61 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for role_permissions
@@ -814,7 +816,7 @@ CREATE TABLE `roles`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_roles_activo`(`activo` ASC) USING BTREE,
   INDEX `idx_roles_id_name`(`id` ASC, `name` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for security_node
@@ -856,7 +858,7 @@ CREATE TABLE `solicitud_descanso`  (
   INDEX `fk_periodo_vacaciones`(`periodo_id` ASC) USING BTREE,
   CONSTRAINT `fk_periodo_vacaciones` FOREIGN KEY (`periodo_id`) REFERENCES `periodos_vacacionales` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `idx_empleado_solicitud` FOREIGN KEY (`empleado_id`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 372 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for stock_toner_unidad
@@ -950,7 +952,7 @@ CREATE TABLE `token_version`  (
   `version` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 261 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for unidad
@@ -994,7 +996,7 @@ CREATE TABLE `unidad`  (
   CONSTRAINT `FK_unidad_empleado` FOREIGN KEY (`supervisor_id`) REFERENCES `empleado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `FK_unidad_estado` FOREIGN KEY (`estado_id`) REFERENCES `estado` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `FK_unidad_zona` FOREIGN KEY (`zona_id`) REFERENCES `zona` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 126 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 129 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for unidad_impresora_documentos
@@ -1090,6 +1092,84 @@ CREATE TABLE `zona`  (
   UNIQUE INDEX `IDX_nombre_zona`(`nombre` ASC) USING BTREE,
   INDEX `idx_zona_activa`(`activo` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 814 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_spanish_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- View structure for periodos vacacionales
+-- ----------------------------
+DROP VIEW IF EXISTS `periodos vacacionales`;
+CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `periodos vacacionales` AS select `periodos_vacacionales`.`id` AS `id`,`periodos_vacacionales`.`empleado_id` AS `empleado_id`,`empleado`.`codigo_empleado` AS `codigo_empleado`,`empleado`.`nombre_completo` AS `nombre_completo`,`empleado`.`fecha_alta` AS `fecha_alta`,`periodos_vacacionales`.`estatus` AS `estatus`,`periodos_vacacionales`.`fecha_inicio` AS `fecha_inicio`,`periodos_vacacionales`.`fecha_fin` AS `fecha_fin`,`periodos_vacacionales`.`fecha_caducidad` AS `fecha_caducidad` from (`periodos_vacacionales` join `empleado` on(`periodos_vacacionales`.`empleado_id` = `empleado`.`id`));
+
+-- ----------------------------
+-- Procedure structure for consultar periodos
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `consultar periodos`;
+delimiter ;;
+CREATE PROCEDURE `consultar periodos`()
+BEGIN
+  select `periodos_vacacionales`.`id` AS `id`,`periodos_vacacionales`.`empleado_id` AS `empleado_id`,`empleado`.`codigo_empleado` AS `codigo_empleado`,`empleado`.`nombre_completo` AS `nombre_completo`,`empleado`.`fecha_alta` AS `fecha_alta`,`periodos_vacacionales`.`estatus` AS `estatus`,`periodos_vacacionales`.`fecha_inicio` AS `fecha_inicio`,`periodos_vacacionales`.`fecha_fin` AS `fecha_fin`,`periodos_vacacionales`.`fecha_caducidad` AS `fecha_caducidad` from (`periodos_vacacionales` join `empleado` on(`periodos_vacacionales`.`empleado_id` = `empleado`.`id`)) where `periodos_vacacionales`.`fecha_caducidad` <> `periodos_vacacionales`.`fecha_fin`;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Procedure structure for empleado activos por unidad
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `empleado activos por unidad`;
+delimiter ;;
+CREATE PROCEDURE `empleado activos por unidad`(IN _id_unidad int(20))
+BEGIN
+ SELECT * FROM empleado WHERE empleado.unidad_id=_id_unidad AND empleado.estatus<>'B';
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Procedure structure for obtener_empleado
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `obtener_empleado`;
+delimiter ;;
+CREATE PROCEDURE `obtener_empleado`(num_colaborador int)
+BEGIN
+  SELECT * from empleado WHERE empleado.codigo_empleado=num_colaborador;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Procedure structure for periodos_empleado
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `periodos_empleado`;
+delimiter ;;
+CREATE PROCEDURE `periodos_empleado`(IN num_colaborador int(20))
+BEGIN
+ SELECT
+	periodos_vacacionales.id AS id, 
+	periodos_vacacionales.empleado_id AS empleado_id, 
+	empleado.codigo_empleado AS codigo_empleado,
+  periodos_vacacionales.dias_habilitados,
+  periodos_vacacionales.dias_tomados,
+  periodos_vacacionales.dias_restantes, 
+	empleado.nombre_completo AS nombre_completo, 
+	empleado.fecha_alta AS fecha_alta, 
+	periodos_vacacionales.estatus AS estatus, 
+	periodos_vacacionales.fecha_inicio AS fecha_inicio, 
+	periodos_vacacionales.fecha_fin AS fecha_fin, 
+	periodos_vacacionales.fecha_caducidad AS fecha_caducidad
+FROM
+	(
+		periodos_vacacionales
+		join
+		empleado
+		ON 
+			(
+				periodos_vacacionales.empleado_id = empleado.id
+			)
+	)
+WHERE
+	empleado.codigo_empleado = num_colaborador;
+END
+;;
+delimiter ;
 
 -- ----------------------------
 -- Event structure for ev_refrescar_vm_observaciones_por_departamento

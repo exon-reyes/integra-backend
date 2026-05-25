@@ -92,8 +92,8 @@ public class GenerarPapeletaExcelService {
             // Q27 -> Row 26, Col 16 -> diasTomados
             setCell(sheet, 26, 16, dto.getDiasTomados());
 
-            // Q28 -> Row 27, Col 16 -> diasSolicitados
-            setCell(sheet, 27, 16, dto.getDiasSolicitados());
+            // Q28 -> Row 27, Col 16 -> diasSolicitados (calculated from fechaSolicituds size)
+            setCell(sheet, 27, 16, dto.getFechaSolicituds().size());
 
             // Q29 -> Row 28, Col 16 -> remaining (diasHabilitados - diasTomados - diasSolicitados)
             setCell(sheet, 28, 16, dto.getRestanteSiAprueba());

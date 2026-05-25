@@ -103,7 +103,6 @@ public class ObtenerSolicitudes {
                 root.get("estatus"),
                 root.get("estatusNivel1"),
                 root.get("estatusNivel2"),
-                root.get("diasSolicitados"),
                 emp.get("id"),
                 emp.get("codigoEmpleado"),
                 emp.get("nombreCompleto"),

@@ -70,6 +70,7 @@ public class ObtenerPeriodos {
                 root.get("fechaFin"),
                 root.get("diasHabilitados"),
                 root.get("diasTomados"),
+                root.get("diasRestantes"),
                 root.get("estatus")
         ));
 

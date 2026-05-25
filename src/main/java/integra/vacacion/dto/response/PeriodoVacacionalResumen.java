@@ -15,6 +15,7 @@ public record PeriodoVacacionalResumen(
         LocalDate fechaFin,
         Integer diasHabilitados,
         Integer diasTomados,
+        Integer diasRestantes,
         EstatusPeriodo estatus
 ) {
 }

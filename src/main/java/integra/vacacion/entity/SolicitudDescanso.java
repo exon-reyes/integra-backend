@@ -39,9 +39,6 @@ public class SolicitudDescanso {
     @Column(name = "fecha_creacion")
     private LocalDate fechaCreacion;
 
-    @Column(name = "dias_solicitados")
-    private Integer diasSolicitados;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "estatus", nullable = false, length = 25)
     private EstatusSolicitud estatus;

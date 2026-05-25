@@ -16,6 +16,22 @@ public interface SolicitudDescansoRepository extends JpaRepository<SolicitudDesc
     @EntityGraph(attributePaths = {"empleado.puesto", "empleado.unidad", "periodo", "diasSolicitudDescansos"})
     Optional<SolicitudDescanso> findByFolioSolicitud(Long folioSolicitud);
 
+    @Query(value = """
+            SELECT COUNT(d.id)
+            FROM dias_solicitud_descanso d
+            INNER JOIN solicitud_descanso s ON d.folio_id = s.id
+            WHERE s.empleado_id = :empleadoId
+              AND s.periodo_id = :periodoId
+              AND s.tipo_solicitud = 'VACACION'
+              AND s.id != :excluirId
+              AND d.estatus_nivel2 = 'PENDIENTE'
+            """, nativeQuery = true)
+    Long sumDiasSolicitadosPendientes(
+            @Param("empleadoId") Integer empleadoId,
+            @Param("periodoId") Long periodoId,
+            @Param("excluirId") Long excluirId
+    );
+
     @Query("""
             SELECT DISTINCT s FROM SolicitudDescanso s
             JOIN FETCH s.diasSolicitudDescansos d

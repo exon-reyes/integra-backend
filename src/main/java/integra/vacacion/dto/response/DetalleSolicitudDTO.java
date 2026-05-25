@@ -14,7 +14,11 @@ public class DetalleSolicitudDTO {
     private Empleado empleado;
     private int diasHabilitados;
     private int anioGestion;
-    private int diasSolicitados;
+    private int diasSolicitados;       // Global: todas las solicitudes activas del periodo
+    private int diasEstaSolicitud;     // Solo los días de esta solicitud específica (no cancelados)
+    private int diasAprobadosEstaSolicitud;   // Días aprobados granularmente en esta solicitud
+    private int diasPendientesEstaSolicitud;  // Días pendientes granularmente en esta solicitud
+    private int diasCanceladosEstaSolicitud;  // Días cancelados granularmente en esta solicitud
     private int diasTomados;
     private LocalDate fechaCreacion;
     private int restanteSiAprueba;

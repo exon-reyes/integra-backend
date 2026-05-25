@@ -64,7 +64,6 @@ public class CrearSolicitudVacacion {
         entity.setFolioSolicitud(FolioGenerator.generarFolioNumericoUnico());
         entity.setTipoSolicitud(TipoSolicitud.VACACION);
         entity.setFechaCreacion(LocalDate.now());
-        entity.setDiasSolicitados(fechasValidas.size());
         entity.setEstatus(EstatusSolicitud.PENDIENTE);
         entity.setPeriodo(periodo);
         entity.setEstatusNivel1(EstatusSolicitud.PENDIENTE);

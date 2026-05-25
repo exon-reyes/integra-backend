@@ -60,8 +60,8 @@ public class VacacionGestionController {
         return ResponseEntity.ok(ResponseData.success("Estatus de los días actualizados correctamente", null));
     }
     @PatchMapping("{id}/cancelar")
-    public ResponseEntity<ResponseData<Void>> cancelarSolicitud(@PathVariable Long id, @RequestParam Integer usuarioId, @RequestParam TipoSolicitud tipo) {
-        eliminarDiaSolicitado.eliminar(id, usuarioId,tipo);
+    public ResponseEntity<ResponseData<Void>> cancelarSolicitud(@PathVariable Long id, @RequestParam Integer usuarioId) {
+        eliminarDiaSolicitado.eliminar(id, usuarioId);
         return ResponseEntity.ok(ResponseData.success("Solicitud cancelada exitosamente", null));
     }
     @DeleteMapping("/{id}")

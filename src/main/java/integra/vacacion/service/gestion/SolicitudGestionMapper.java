@@ -22,7 +22,7 @@ public final class SolicitudGestionMapper {
         dto.setEstatusGeneral(r.estatusGeneral() != null ? r.estatusGeneral().name() : null);
         dto.setEstatusJefe(r.estatusNivel1() != null ? r.estatusNivel1().name() : null);
         dto.setEstatusRrhh(r.estatusNivel2() != null ? r.estatusNivel2().name() : null);
-        dto.setDiasTotalSolicitud(r.diasSolicitados() != null ? r.diasSolicitados() : 0);
+        dto.setDiasTotalSolicitud(dias.size());
         dto.setDiasAprobados(calcularAprobados(dias));
         dto.setPrimerJefe(r.primerJefeNombre());
         dto.setSegundoJefe(r.segundoJefeNombre());

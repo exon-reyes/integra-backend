@@ -106,6 +106,12 @@ public class ActualizarEstatusSolicitud {
 
         data.getDiasSolicitudDescansos().forEach(dia -> {
             EstatusSolicitud anteriorN2 = dia.getEstatusNivel2();
+
+            // Respetar días ya cancelados granularmente: la aprobación global no los revierte
+            if (anteriorN2 == EstatusSolicitud.CANCELADA && nuevoGlobal == EstatusSolicitud.APROBADA) {
+                return;
+            }
+
             if (anteriorN2 == nuevoGlobal) return;
 
             dia.setEstatusNivel2(nuevoGlobal);
@@ -113,6 +119,7 @@ public class ActualizarEstatusSolicitud {
 
             if (!esVacacion) return;
 
+            // Actualizar contadores del periodo
             // Restantes
             if (nuevoGlobal == EstatusSolicitud.CANCELADA && anteriorN2 != EstatusSolicitud.CANCELADA) {
                 periodo.setDiasRestantes(periodo.getDiasRestantes() + 1);
@@ -146,8 +153,18 @@ public class ActualizarEstatusSolicitud {
     }
 
     private void verificarEstadoDelPeriodo(SolicitudDescanso data) {
+        // Solo las solicitudes de VACACION pueden cambiar el estatus del periodo
+        if (data.getTipoSolicitud() != TipoSolicitud.VACACION) return;
+
         var periodo = data.getPeriodo();
-        periodo.setEstatus(Objects.equals(periodo.getDiasTomados(), periodo.getDiasHabilitados()) ? EstatusPeriodo.CONSUMIDO : EstatusPeriodo.VIGENTE);
+        // Solo transicionar entre VIGENTE y CONSUMIDO; no tocar VENCIDO (lo gestiona el scheduler)
+        if (periodo.getEstatus() == EstatusPeriodo.VENCIDO) return;
+
+        periodo.setEstatus(
+            Objects.equals(periodo.getDiasTomados(), periodo.getDiasHabilitados())
+                ? EstatusPeriodo.CONSUMIDO
+                : EstatusPeriodo.VIGENTE
+        );
     }
 
     private void registrarHistorial(SolicitudDescanso data, NuevoEstatusSolicitud request, String contexto) {

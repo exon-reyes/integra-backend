@@ -49,7 +49,33 @@ public class DetallesSolicitud {
         result.setEstatusSegundoResponsable(data.getEstatusNivel2());
         result.setFecha(data.getFechaCreacion());
 
-        result.setDiasSolicitados(data.getDiasSolicitados());
+        // Días en otras solicitudes PENDIENTE del mismo empleado y periodo (excluye la actual)
+        // Conteo granular desde dias_solicitud_descanso para mayor precisión
+        // Este campo representa SOLO las otras solicitudes, NO incluye los días de esta solicitud
+        int diasOtrasSolicitudes = repository.sumDiasSolicitadosPendientes(
+                dataEmpleado.getId(), periodo.getId(), data.getId()
+        ).intValue();
+
+        // diasSolicitados representa SOLO los días de OTRAS solicitudes pendientes
+        // Los días de ESTA solicitud ya están en diasPendientesEstaSolicitud
+        result.setDiasSolicitados(diasOtrasSolicitudes);
+        // diasEstaSolicitud: conteo granular real por estatus (no usa campo denormalizado)
+        long diasEstaSolicitudAprobados = data.getDiasSolicitudDescansos().stream()
+                .filter(d -> d.getEstatusNivel2() == EstatusSolicitud.APROBADA)
+                .count();
+        long diasEstaSolicitudPendientes = data.getDiasSolicitudDescansos().stream()
+                .filter(d -> d.getEstatusNivel2() == EstatusSolicitud.PENDIENTE)
+                .count();
+        long diasEstaSolicitudCancelados = data.getDiasSolicitudDescansos().stream()
+                .filter(d -> d.getEstatusNivel2() == EstatusSolicitud.CANCELADA)
+                .count();
+
+        // Para la barra: mostrar días no cancelados de esta solicitud
+        int diasEstaSolicitud = (int) (diasEstaSolicitudAprobados + diasEstaSolicitudPendientes);
+        result.setDiasEstaSolicitud(diasEstaSolicitud);
+        result.setDiasAprobadosEstaSolicitud((int) diasEstaSolicitudAprobados);
+        result.setDiasPendientesEstaSolicitud((int) diasEstaSolicitudPendientes);
+        result.setDiasCanceladosEstaSolicitud((int) diasEstaSolicitudCancelados);
         result.setDiasHabilitados(periodo.getDiasHabilitados());
         result.setDiasTomados(periodo.getDiasTomados());
 
@@ -82,7 +108,8 @@ public class DetallesSolicitud {
         result.setEstatusSegundoResponsable(data.getEstatusNivel2());
 
         if (data.getTipoSolicitud().equals(TipoSolicitud.VACACION) && data.getEstatus() != EstatusSolicitud.APROBADA) {
-            result.setRestanteSiAprueba(periodo.getDiasHabilitados() - periodo.getDiasTomados() - data.getDiasSolicitados());
+            // Cálculo: diasHabilitados - diasTomados - diasPendientesEsta - diasOtrasSolicitudes
+            result.setRestanteSiAprueba(periodo.getDiasHabilitados() - periodo.getDiasTomados() - (int)diasEstaSolicitudPendientes - diasOtrasSolicitudes);
         } else {
             result.setRestanteSiAprueba(periodo.getDiasRestantes());
         }

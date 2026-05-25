@@ -21,7 +21,10 @@ public class EliminarSolicitud {
         }
         var periodo=solicitud.getPeriodo();
         if(solicitud.getTipoSolicitud() == TipoSolicitud.VACACION){
-            periodo.setDiasRestantes(periodo.getDiasRestantes() + solicitud.getDiasSolicitados());
+            int diasADevolver = (int) solicitud.getDiasSolicitudDescansos().stream()
+                    .filter(d -> d.getEstatusNivel2() != integra.vacacion.domain.model.EstatusSolicitud.CANCELADA)
+                    .count();
+            periodo.setDiasRestantes(periodo.getDiasRestantes() + diasADevolver);
         }
         solicitudRepository.deleteById(id);
     }
