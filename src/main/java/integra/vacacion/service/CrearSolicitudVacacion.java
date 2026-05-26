@@ -57,6 +57,11 @@ public class CrearSolicitudVacacion {
             throw VacacionException.fechaInvalida("No existen fechas válidas para procesar; todas las seleccionadas son festivas o ya están reservadas.");
         }
 
+        // Validar saldo suficiente antes de descontar
+        if (periodo.getDiasRestantes() < fechasValidas.size()) {
+            throw VacacionException.saldoInsuficiente(periodo.getDiasRestantes(), fechasValidas.size());
+        }
+
         periodo.setDiasRestantes(periodo.getDiasRestantes() - fechasValidas.size());
         // Crear Entidad Solicitud (Padre)
         SolicitudDescanso entity = new SolicitudDescanso();
