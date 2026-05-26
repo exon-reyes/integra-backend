@@ -19,12 +19,20 @@ public class EliminarSolicitud {
         if (solicitud.getEstatus() == EstatusSolicitud.APROBADA) {
             throw VacacionException.estadoInvalido("eliminar", solicitud.getEstatus().name());
         }
-        var periodo=solicitud.getPeriodo();
-        if(solicitud.getTipoSolicitud() == TipoSolicitud.VACACION){
-            int diasADevolver = (int) solicitud.getDiasSolicitudDescansos().stream()
-                    .filter(d -> d.getEstatusNivel2() != integra.vacacion.domain.model.EstatusSolicitud.CANCELADA)
-                    .count();
-            periodo.setDiasRestantes(periodo.getDiasRestantes() + diasADevolver);
+        var periodo = solicitud.getPeriodo();
+        if (solicitud.getTipoSolicitud() == TipoSolicitud.VACACION) {
+            solicitud.getDiasSolicitudDescansos().forEach(d -> {
+                EstatusSolicitud n2 = d.getEstatusNivel2();
+                // Devolver diasRestantes por cada día que no estaba cancelado
+                // (los cancelados ya fueron devueltos cuando se cancelaron)
+                if (n2 != EstatusSolicitud.CANCELADA) {
+                    periodo.setDiasRestantes(periodo.getDiasRestantes() + 1);
+                }
+                // Decrementar diasTomados si el día estaba aprobado
+                if (n2 == EstatusSolicitud.APROBADA && periodo.getDiasTomados() > 0) {
+                    periodo.setDiasTomados(periodo.getDiasTomados() - 1);
+                }
+            });
         }
         solicitudRepository.deleteById(id);
     }

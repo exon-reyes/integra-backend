@@ -39,10 +39,27 @@ public class ActualizarEstatusSolicitud {
         LocalDate hoy = LocalDate.now();
 
         if (request.getNivel() == 2) {
+            // Nivel 2 no puede aprobar si nivel 1 ya canceló la solicitud
+            if (nuevoEstatus == EstatusSolicitud.APROBADA
+                    && data.getEstatusNivel1() == EstatusSolicitud.CANCELADA) {
+                throw VacacionException.estadoInvalido("aprobar",
+                        "No se puede aprobar: el primer nivel ya canceló esta solicitud.");
+            }
             sincronizarDiasYContadores(data, nuevoEstatus, hoy);
             data.setEstatus(nuevoEstatus);
             data.setEstatusNivel2(nuevoEstatus);
             data.setFechaAccionNivel2(hoy);
+            // Si nivel 2 aprueba y nivel 1 aún está pendiente, se considera implícitamente aprobado
+            if (nuevoEstatus == EstatusSolicitud.APROBADA && data.getEstatusNivel1() == EstatusSolicitud.PENDIENTE) {
+                data.setEstatusNivel1(EstatusSolicitud.APROBADA);
+                data.setFechaAccionNivel1(hoy);
+                data.getDiasSolicitudDescansos().forEach(dia -> {
+                    if (dia.getEstatusNivel1() == EstatusSolicitud.PENDIENTE) {
+                        dia.setEstatusNivel1(EstatusSolicitud.APROBADA);
+                        dia.setFechaAccionNivel1(hoy);
+                    }
+                });
+            }
         } else {
             actualizarNivel1Transitorio(data, request, hoy);
         }
@@ -149,6 +166,20 @@ public class ActualizarEstatusSolicitud {
         // REGLA: Nivel 1 puede cancelar Globalmente si el estatus es PENDIENTE
         if (request.getNuevoEstatus() == EstatusSolicitud.CANCELADA && data.getEstatus() == EstatusSolicitud.PENDIENTE) {
             data.setEstatus(EstatusSolicitud.CANCELADA);
+
+            // Devolver saldo vacacional si aplica (nivel 1 cancela toda la solicitud)
+            if (data.getTipoSolicitud() == TipoSolicitud.VACACION) {
+                var periodo = data.getPeriodo();
+                data.getDiasSolicitudDescansos().forEach(dia -> {
+                    EstatusSolicitud n2 = dia.getEstatusNivel2();
+                    if (n2 != EstatusSolicitud.CANCELADA) {
+                        periodo.setDiasRestantes(periodo.getDiasRestantes() + 1);
+                    }
+                    if (n2 == EstatusSolicitud.APROBADA && periodo.getDiasTomados() > 0) {
+                        periodo.setDiasTomados(periodo.getDiasTomados() - 1);
+                    }
+                });
+            }
         }
     }
 
