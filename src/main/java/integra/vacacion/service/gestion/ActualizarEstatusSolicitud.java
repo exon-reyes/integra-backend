@@ -157,30 +157,11 @@ public class ActualizarEstatusSolicitud {
         data.setEstatusNivel1(request.getNuevoEstatus());
         data.setFechaAccionNivel1(hoy);
 
-        // Sincronización para Nivel 1
         data.getDiasSolicitudDescansos().forEach(dia -> {
             dia.setEstatusNivel1(request.getNuevoEstatus());
             dia.setFechaAccionNivel1(hoy);
         });
-
-        // REGLA: Nivel 1 puede cancelar Globalmente si el estatus es PENDIENTE
-        if (request.getNuevoEstatus() == EstatusSolicitud.CANCELADA && data.getEstatus() == EstatusSolicitud.PENDIENTE) {
-            data.setEstatus(EstatusSolicitud.CANCELADA);
-
-            // Devolver saldo vacacional si aplica (nivel 1 cancela toda la solicitud)
-            if (data.getTipoSolicitud() == TipoSolicitud.VACACION) {
-                var periodo = data.getPeriodo();
-                data.getDiasSolicitudDescansos().forEach(dia -> {
-                    EstatusSolicitud n2 = dia.getEstatusNivel2();
-                    if (n2 != EstatusSolicitud.CANCELADA) {
-                        periodo.setDiasRestantes(periodo.getDiasRestantes() + 1);
-                    }
-                    if (n2 == EstatusSolicitud.APROBADA && periodo.getDiasTomados() > 0) {
-                        periodo.setDiasTomados(periodo.getDiasTomados() - 1);
-                    }
-                });
-            }
-        }
+        // Nivel 1 es transitorio: no modifica estatus global ni saldos del periodo.
     }
 
     private void verificarEstadoDelPeriodo(SolicitudDescanso data) {
